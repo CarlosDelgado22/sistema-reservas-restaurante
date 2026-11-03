@@ -183,91 +183,6 @@
   font-size: 13px;
 }
 
-.kitchen-page-head time {
-  color: #707b89;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-
-.kitchen-stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.kitchen-stat {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  align-items: center;
-  column-gap: 13px;
-  min-height: 92px;
-  padding: 17px 19px;
-  border: 0;
-  border-radius: 13px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(48, 41, 28, 0.07);
-}
-
-.kitchen-stat__icon {
-  grid-row: 1 / span 2;
-  color: var(--kitchen-gold);
-  font-size: 27px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.kitchen-stat__label {
-  color: #697587;
-  font-size: 11px;
-}
-
-.kitchen-stat strong {
-  color: var(--kitchen-ink);
-  font-size: 23px;
-  font-weight: 600;
-  line-height: 1.15;
-  font-variant-numeric: tabular-nums;
-}
-
-.kitchen-panel {
-  margin-top: 25px;
-  padding: 20px 24px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(48, 41, 28, 0.07);
-}
-
-.kitchen-panel h2 {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  color: #222;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.kitchen-panel h2 span {
-  color: var(--kitchen-gold);
-}
-
-.kitchen-panel > p {
-  margin: 16px 0 0;
-  color: #30343a;
-  font-size: 13px;
-}
-
-.kitchen-panel .kitchen-panel__hint {
-  margin-top: 8px;
-  color: #76808b;
-  font-size: 12px;
-}
-
-.kitchen-panel .button {
-  margin-top: 17px;
-}
-
 .kitchen-queue-view .kitchen-page-head {
   margin-bottom: 20px;
 }
@@ -501,34 +416,6 @@
 
   .kitchen-main {
     padding: 20px 16px 28px;
-  }
-
-  .kitchen-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .kitchen-stat {
-    min-height: 82px;
-    padding: 13px 11px;
-    column-gap: 8px;
-  }
-
-  .kitchen-stat__icon {
-    font-size: 23px;
-  }
-
-  .kitchen-stat__label {
-    font-size: 10px;
-  }
-
-  .kitchen-stat strong {
-    font-size: 20px;
-  }
-
-  .kitchen-panel {
-    margin-top: 17px;
-    padding: 18px;
   }
 
   .kitchen-page-head {

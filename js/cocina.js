@@ -9,12 +9,10 @@
   namespace.modules.initKitchen = function () {
   let currentFilter = 'pending';
   let tables = [];
-  let reservations = [];
   let orders = [];
 
   const username = namespace.auth.getUser() || 'cocina';
   document.getElementById('kitchen-sidebar-user').textContent = username;
-  document.getElementById('kitchen-welcome-user').textContent = username;
 
   const orderContainer = document.getElementById('kitchen-orders');
   const emptyState = document.getElementById('kitchen-empty');
@@ -22,8 +20,6 @@
   const storageKeys = namespace.modules.config.storageKeys;
   const orderStorageKey = storageKeys.orders;
   const tableStorageKey = storageKeys.tables;
-  const reservationStorageKey = storageKeys.reservations;
-  const dispatchStorageKey = storageKeys.dispatches;
 
   const getKitchenStatus = namespace.modules.getKitchenStatus;
 
@@ -39,31 +35,6 @@
   function setFeedback(message) {
     feedback.textContent = message;
     feedback.hidden = !message;
-  }
-
-  function updateSummary() {
-    const today = document.querySelector('[data-today]').getAttribute('datetime');
-    document.getElementById('kitchen-stat-reservations').textContent = String(
-      reservations.filter(function (reservation) {
-        return reservation.date === today;
-      }).length
-    );
-    document.getElementById('kitchen-stat-pending').textContent = String(getPendingDishCount());
-    document.getElementById('kitchen-stat-occupied').textContent = String(
-      tables.filter(function (table) {
-        return table.status === 'Ocupada';
-      }).length
-    );
-    document.getElementById('kitchen-stat-dispatches').textContent = String(
-      Array.isArray(readStorage(dispatchStorageKey, []))
-        ? readStorage(dispatchStorageKey, []).filter(function (dispatch) {
-          return dispatch && dispatch.status !== 'Entregado' && dispatch.status !== 'Cancelado';
-        }).length
-        : 0
-    );
-
-    document.getElementById('kitchen-pending-count').textContent = String(getPendingDishCount());
-    document.getElementById('kitchen-nav-count').textContent = String(getPendingDishCount());
   }
 
   function readStorage(key, defaultValue) {
@@ -160,16 +131,17 @@
       : currentFilter === 'pending'
         ? 'No hay platos pendientes. ¡Buen trabajo!'
         : 'No hay pedidos registrados.';
-    updateSummary();
+    const pendingCount = String(getPendingDishCount());
+    document.getElementById('kitchen-pending-count').textContent = pendingCount;
+    document.getElementById('kitchen-nav-count').textContent = pendingCount;
   }
 
   function loadData() {
     try {
       const savedTables = readStorage(tableStorageKey, []);
-      const savedReservations = readStorage(reservationStorageKey, []);
       const savedOrders = readStorage(orderStorageKey, []);
 
-      if (!Array.isArray(savedTables) || !Array.isArray(savedReservations) || !Array.isArray(savedOrders)) {
+      if (!Array.isArray(savedTables) || !Array.isArray(savedOrders)) {
         throw new Error('Los datos guardados no tienen el formato esperado.');
       }
 
@@ -193,7 +165,6 @@
       }
 
       tables = savedTables;
-      reservations = savedReservations;
       orders = savedOrders.map(function (order) {
         return {
           ...order,
@@ -268,12 +239,8 @@
     });
   });
 
-  document.querySelector('[data-kitchen-open]').addEventListener('click', function () {
-    document.querySelector('[data-admin-view-link="kitchen"]').click();
-  });
-
   window.addEventListener('storage', function (event) {
-    if ([orderStorageKey, tableStorageKey, reservationStorageKey, dispatchStorageKey].includes(event.key)) {
+    if ([orderStorageKey, tableStorageKey].includes(event.key)) {
       loadData();
     }
   });
