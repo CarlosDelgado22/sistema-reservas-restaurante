@@ -44,7 +44,7 @@
 
     <aside class="admin-sidebar" id="admin-sidebar" aria-label="Menú principal">
       <nav class="admin-nav">
-        <a href="#" class="nav-item is-active" aria-current="page">
+        <a href="#panel" class="nav-item is-active" aria-current="page" data-admin-view-link="panel">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3.5" y="3.5" width="7" height="7" rx="2"/>
             <rect x="13.5" y="3.5" width="7" height="7" rx="2"/>
@@ -54,7 +54,7 @@
           <span>Panel</span>
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="#mesas" class="nav-item" data-admin-view-link="tables">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 9.5h16"/>
             <path d="M4 14.5h16"/>
@@ -107,6 +107,7 @@
     </aside>
 
     <main class="admin-main">
+      <div id="panel-view" data-admin-view>
       <div class="page-head">
         <h1 class="page-title">
           Resumen del día <span class="page-title__date">— <time data-today>03/11/2026</time></span>
@@ -233,8 +234,82 @@
           </div>
         </div>
       </section>
+      </div>
+
+      <section class="tables-view" id="tables-view" data-admin-view hidden>
+        <div class="tables-heading">
+          <div>
+            <h1 class="page-title">Mesas</h1>
+            <p class="tables-description">Estado actual de las mesas del restaurante</p>
+          </div>
+          <button type="button" class="button button--primary" id="create-table">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 5v14"/><path d="M5 12h14"/>
+            </svg>
+            Crear mesa
+          </button>
+        </div>
+
+        <p class="table-feedback" id="table-feedback" role="status" aria-live="polite" hidden></p>
+
+        <section class="table-cards" id="table-cards" aria-label="Estado de las mesas"></section>
+
+        <section class="panel tables-panel" aria-labelledby="table-history-title">
+          <header class="panel-head">
+            <h2 class="panel-title" id="table-history-title">Historial de mesas</h2>
+          </header>
+          <div class="table-wrap">
+            <table class="tables-table">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Capacidad</th>
+                  <th scope="col">Zona</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
     </main>
   </div>
+
+  <dialog class="table-dialog" id="table-dialog" aria-labelledby="table-dialog-title">
+    <form class="table-form" id="table-form">
+      <div class="table-dialog__heading">
+        <div>
+          <p class="table-dialog__eyebrow">Administración</p>
+          <h2 id="table-dialog-title">Crear mesa</h2>
+        </div>
+        <button type="button" class="icon-button" id="close-table-dialog" aria-label="Cerrar formulario">×</button>
+      </div>
+
+      <input type="hidden" name="id">
+      <label class="table-field" for="table-capacity">
+        Capacidad
+        <input id="table-capacity" name="capacity" type="number" min="1" max="50" step="1" required>
+      </label>
+      <label class="table-field" for="table-zone">
+        Zona
+        <input id="table-zone" name="zone" type="text" maxlength="40" placeholder="Ej. Terraza" required>
+      </label>
+      <label class="table-field" for="table-status">
+        Estado
+        <select id="table-status" name="status" required>
+          <option value="Disponible">Disponible</option>
+          <option value="Ocupada">Ocupada</option>
+          <option value="Reservada">Reservada</option>
+        </select>
+      </label>
+      <div class="table-dialog__actions">
+        <button type="button" class="button button--secondary" id="cancel-table-dialog">Cancelar</button>
+        <button type="submit" class="button button--primary">Guardar mesa</button>
+      </div>
+    </form>
+  </dialog>
 
   <script src="js/admin.js"></script>
 </body>
