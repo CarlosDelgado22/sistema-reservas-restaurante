@@ -41,10 +41,42 @@
     });
   });
 
-  // La autenticación se conectará más adelante.
   if (form) {
     form.addEventListener('submit', function (event) {
       event.preventDefault();
+
+      const username = usernameInput.value.trim().toLocaleLowerCase('es');
+      const password = passwordInput.value;
+      const feedback = document.getElementById('login-feedback');
+      const demoAccounts = {
+        admin: { password: 'admin123', destination: 'admin.html' },
+        cocina: { password: 'cocina123', destination: 'cocina.html' }
+      };
+      const account = demoAccounts[username];
+
+      if (!account || account.password !== password) {
+        if (feedback) {
+          feedback.textContent = username === 'mesero' || username === 'despacho'
+            ? 'El acceso para este perfil todavía no está disponible.'
+            : 'Usuario o contraseña incorrectos.';
+          feedback.hidden = false;
+        }
+        passwordInput.focus();
+        return;
+      }
+
+      try {
+        window.sessionStorage.setItem('sazon-session-role', username);
+        window.sessionStorage.setItem('sazon-session-user', username);
+      } catch (error) {
+        if (feedback) {
+          feedback.textContent = 'No se pudo iniciar la sesión en este navegador.';
+          feedback.hidden = false;
+        }
+        return;
+      }
+
+      window.location.assign(account.destination);
     });
   }
 })();

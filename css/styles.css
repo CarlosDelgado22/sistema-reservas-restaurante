@@ -481,6 +481,13 @@ body.auth-body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+.login-feedback {
+  margin: 13px 0 0;
+  color: #b13c48;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* ---------- Accesos de demostración ---------- */
 
 .demo-access {

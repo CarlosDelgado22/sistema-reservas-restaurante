@@ -12,6 +12,19 @@
   const scrim = document.getElementById('sidebar-scrim');
   const mobileQuery = window.matchMedia('(max-width: 1024px)');
 
+  if (!body.classList.contains('kitchen-body') &&
+      window.sessionStorage.getItem('sazon-session-role') === 'cocina') {
+    window.location.replace('cocina.html');
+    return;
+  }
+
+  document.querySelectorAll('.logout-link').forEach(function (link) {
+    link.addEventListener('click', function () {
+      window.sessionStorage.removeItem('sazon-session-role');
+      window.sessionStorage.removeItem('sazon-session-user');
+    });
+  });
+
   /* Fecha del día en formato dd/mm/aaaa */
   const today = document.querySelector('[data-today]');
   if (today) {
@@ -693,9 +706,9 @@
     orderEmpty.hidden = orders.length !== 0;
     pendingDishesCount.textContent = String(
       orders.reduce(function (total, order) {
-        if (order.status !== 'Pendiente') return total;
+        if (order.status === 'Entregado') return total;
         return total + order.items.reduce(function (count, item) {
-          return count + item.quantity;
+          return count + (item.kitchenStatus === 'Listo' ? 0 : item.quantity);
         }, 0);
       }, 0)
     );
@@ -876,6 +889,8 @@
       if (!orderForm.reportValidity()) return;
 
       const formData = new FormData(orderForm);
+      const idValue = String(formData.get('id'));
+      const editedId = idValue ? Number(idValue) : null;
       const tableId = Number(formData.get('tableId'));
       const selectedTable = tables.find(function (table) {
         return table.id === tableId;
@@ -890,11 +905,19 @@
         const dish = menuDishes.find(function (menuItem) {
           return menuItem.id === row.querySelector('[name="dish"]').value;
         });
+        const existingItem = editedId && dish
+          ? (orders.find(function (order) {
+            return order.id === editedId;
+          }) || { items: [] }).items.find(function (orderItem) {
+            return orderItem.dishId === dish.id;
+          })
+          : null;
         return dish ? {
           dishId: dish.id,
           name: dish.name,
           price: dish.price,
-          quantity: Number(row.querySelector('[name="quantity"]').value)
+          quantity: Number(row.querySelector('[name="quantity"]').value),
+          kitchenStatus: existingItem ? existingItem.kitchenStatus || 'Pendiente' : 'Pendiente'
         } : null;
       });
       if (items.some(function (item) { return item === null; })) {
@@ -902,8 +925,6 @@
         return;
       }
 
-      const idValue = String(formData.get('id'));
-      const editedId = idValue ? Number(idValue) : null;
       const nextOrder = {
         id: editedId || orders.reduce(function (maxId, order) {
           return Math.max(maxId, order.id);
@@ -945,191 +966,6 @@
     });
     document.getElementById('cancel-order-dialog').addEventListener('click', function () {
       orderDialog.close();
-    });
-  }
-
-  const userRows = document.getElementById('user-rows');
-  const userEmpty = document.getElementById('user-empty');
-  const userFeedback = document.getElementById('user-feedback');
-  const userDialog = document.getElementById('user-dialog');
-  const userForm = document.getElementById('user-form');
-  const userDialogTitle = document.getElementById('user-dialog-title');
-  const createUserButton = document.getElementById('create-user');
-  const resetDemoUsersButton = document.getElementById('reset-demo-users');
-  const userStorageKey = 'sazon-admin-users';
-  const demoUsers = [
-    { id: 1, name: 'Administrador', username: 'admin', role: 'Administrador' },
-    { id: 2, name: 'Carlos Mesero', username: 'mesero', role: 'Mesero' },
-    { id: 3, name: 'Ana Cocina', username: 'cocina', role: 'Cocina' },
-    { id: 4, name: 'Luis Despacho', username: 'despacho', role: 'Despacho' }
-  ];
-  const userRoleClasses = {
-    Administrador: 'admin',
-    Mesero: 'server',
-    Cocina: 'kitchen',
-    Despacho: 'dispatch'
-  };
-  let users = [];
-
-  function setUserFeedback(message, isError) {
-    if (!userFeedback) return;
-    userFeedback.textContent = message;
-    userFeedback.classList.toggle('is-error', isError);
-    userFeedback.hidden = !message;
-  }
-
-  function saveUsers(nextUsers, successMessage) {
-    try {
-      window.localStorage.setItem(userStorageKey, JSON.stringify(nextUsers));
-      users = nextUsers;
-      renderUsers();
-      setUserFeedback(successMessage || '', false);
-      return true;
-    } catch (error) {
-      setUserFeedback('No se pudieron guardar los cambios. Revisa el almacenamiento del navegador e inténtalo de nuevo.', true);
-      return false;
-    }
-  }
-
-  function renderUsers() {
-    if (!userRows || !userEmpty) return;
-
-    userRows.replaceChildren();
-    users.forEach(function (user) {
-      const row = document.createElement('tr');
-      row.append(makeCell(user.name), makeCell(user.username));
-
-      const roleCell = document.createElement('td');
-      const roleBadge = document.createElement('span');
-      roleBadge.className = `user-role user-role--${userRoleClasses[user.role]}`;
-      roleBadge.textContent = user.role;
-      roleCell.append(roleBadge);
-      row.append(roleCell);
-
-      const actions = document.createElement('td');
-      actions.className = 'table-actions';
-      const deleteButton = document.createElement('button');
-      deleteButton.type = 'button';
-      deleteButton.className = 'button button--small button--danger';
-      deleteButton.dataset.userAction = 'delete';
-      deleteButton.dataset.userId = String(user.id);
-      deleteButton.textContent = 'Eliminar';
-      deleteButton.setAttribute('aria-label', `Eliminar usuario ${user.username}`);
-      actions.append(deleteButton);
-      row.append(actions);
-      userRows.append(row);
-    });
-
-    userEmpty.hidden = users.length !== 0;
-  }
-
-  function loadUsers() {
-    try {
-      const savedUsers = window.localStorage.getItem(userStorageKey);
-      if (savedUsers === null) {
-        saveUsers(demoUsers);
-        return;
-      }
-
-      const parsedUsers = JSON.parse(savedUsers);
-      const validRoles = Object.keys(userRoleClasses);
-      const validUsers = Array.isArray(parsedUsers) && parsedUsers.every(function (user) {
-        return user &&
-          Number.isInteger(user.id) &&
-          user.id > 0 &&
-          typeof user.name === 'string' &&
-          user.name.trim().length > 0 &&
-          typeof user.username === 'string' &&
-          user.username.trim().length > 0 &&
-          validRoles.includes(user.role);
-      });
-
-      if (!validUsers) {
-        throw new Error('El formato de los usuarios guardados no es válido.');
-      }
-
-      users = parsedUsers;
-      renderUsers();
-    } catch (error) {
-      setUserFeedback('No se pudieron cargar los usuarios guardados. No se mostrarán datos para evitar perder información.', true);
-      if (createUserButton) createUserButton.disabled = true;
-    }
-  }
-
-  function openUserDialog() {
-    if (!userDialog || !userForm || !userDialogTitle) return;
-    userForm.reset();
-    userDialogTitle.textContent = 'Nuevo usuario';
-    userDialog.showModal();
-    userForm.elements.name.focus();
-  }
-
-  if (userRows && userDialog && userForm) {
-    loadUsers();
-
-    createUserButton.addEventListener('click', openUserDialog);
-
-    resetDemoUsersButton.addEventListener('click', function () {
-      if (window.confirm('¿Restaurar las cuatro cuentas demo? Esta acción reemplazará la lista actual de usuarios.')) {
-        saveUsers(demoUsers, 'Se restablecieron los usuarios demo.');
-      }
-    });
-
-    userForm.addEventListener('submit', function (event) {
-      event.preventDefault();
-      if (!userForm.reportValidity()) return;
-
-      const formData = new FormData(userForm);
-      const name = String(formData.get('name')).trim();
-      const username = String(formData.get('username')).trim().toLowerCase();
-      const role = String(formData.get('role'));
-      const usernameExists = users.some(function (user) {
-        return user.username.toLowerCase() === username;
-      });
-
-      if (!name || !username) {
-        setUserFeedback('Ingresa el nombre y el usuario.', true);
-        return;
-      }
-      if (usernameExists) {
-        setUserFeedback('Ese nombre de usuario ya está registrado. Elige otro.', true);
-        return;
-      }
-
-      const nextUser = {
-        id: users.reduce(function (maxId, user) {
-          return Math.max(maxId, user.id);
-        }, 0) + 1,
-        name: name,
-        username: username,
-        role: role
-      };
-
-      if (saveUsers(users.concat(nextUser))) userDialog.close();
-    });
-
-    userRows.addEventListener('click', function (event) {
-      const button = event.target.closest('[data-user-action="delete"]');
-      if (!button) return;
-
-      const id = Number(button.dataset.userId);
-      const user = users.find(function (item) {
-        return item.id === id;
-      });
-      if (!user) return;
-
-      if (window.confirm(`¿Eliminar al usuario ${user.username}?`)) {
-        saveUsers(users.filter(function (item) {
-          return item.id !== id;
-        }));
-      }
-    });
-
-    document.getElementById('close-user-dialog').addEventListener('click', function () {
-      userDialog.close();
-    });
-    document.getElementById('cancel-user-dialog').addEventListener('click', function () {
-      userDialog.close();
     });
   }
 })();
