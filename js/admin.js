@@ -88,6 +88,15 @@
     });
   }
 
+  function getLocalDateOffset(offset) {
+    const date = new Date();
+    date.setDate(date.getDate() + offset);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   if (sidebar) {
     sidebar.inert = isMobile();
 
@@ -335,6 +344,247 @@
     });
     document.getElementById('cancel-table-dialog').addEventListener('click', function () {
       tableDialog.close();
+    });
+  }
+
+  const reservationRows = document.getElementById('reservation-rows');
+  const reservationDialog = document.getElementById('reservation-dialog');
+  const reservationForm = document.getElementById('reservation-form');
+  const reservationDialogTitle = document.getElementById('reservation-dialog-title');
+  const reservationFeedback = document.getElementById('reservation-feedback');
+  const reservationTableSelect = document.getElementById('reservation-table');
+  const reservationEmpty = document.getElementById('reservation-empty');
+  const reservationStorageKey = 'sazon-admin-reservations';
+  let reservations = [];
+
+  function setReservationFeedback(message, isError) {
+    if (!reservationFeedback) return;
+    reservationFeedback.textContent = message;
+    reservationFeedback.classList.toggle('is-error', isError);
+    reservationFeedback.hidden = !message;
+  }
+
+  function formatReservationDate(dateValue) {
+    const parts = dateValue.split('-').map(Number);
+    return new Intl.DateTimeFormat('es', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(new Date(parts[0], parts[1] - 1, parts[2]));
+  }
+
+  function renderReservations() {
+    if (!reservationRows || !reservationEmpty) return;
+
+    const sortedReservations = reservations.slice().sort(function (first, second) {
+      return `${first.date} ${first.time}`.localeCompare(`${second.date} ${second.time}`);
+    });
+
+    reservationRows.replaceChildren();
+    sortedReservations.forEach(function (reservation) {
+      const row = document.createElement('tr');
+      row.append(
+        makeCell(String(reservation.id)),
+        makeCell(reservation.customer),
+        makeCell(reservation.phone)
+      );
+
+      const tableCell = document.createElement('td');
+      const assignedTable = tables.find(function (table) {
+        return table.id === reservation.tableId;
+      });
+      tableCell.textContent = assignedTable ? `Mesa ${assignedTable.id}` : 'Mesa no disponible';
+      row.append(tableCell);
+
+      row.append(
+        makeCell(formatReservationDate(reservation.date)),
+        makeCell(reservation.time),
+        makeCell(String(reservation.guests)),
+        makeCell(reservation.notes || '—')
+      );
+
+      const actions = document.createElement('td');
+      actions.className = 'table-actions';
+      const editButton = document.createElement('button');
+      editButton.type = 'button';
+      editButton.className = 'button button--small button--secondary';
+      editButton.dataset.reservationAction = 'edit';
+      editButton.dataset.reservationId = String(reservation.id);
+      editButton.textContent = 'Editar';
+      editButton.setAttribute('aria-label', `Editar reserva ${reservation.id}`);
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'button button--small button--danger';
+      deleteButton.dataset.reservationAction = 'delete';
+      deleteButton.dataset.reservationId = String(reservation.id);
+      deleteButton.textContent = 'Eliminar';
+      deleteButton.setAttribute('aria-label', `Eliminar reserva ${reservation.id}`);
+      actions.append(editButton, deleteButton);
+      row.append(actions);
+      reservationRows.append(row);
+    });
+
+    reservationEmpty.hidden = reservations.length !== 0;
+  }
+
+  function updateReservationTableOptions(selectedId) {
+    if (!reservationTableSelect) return;
+    reservationTableSelect.replaceChildren();
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = '';
+    placeholderOption.textContent = 'Selecciona una mesa';
+    reservationTableSelect.append(placeholderOption);
+
+    tables.forEach(function (table) {
+      const option = document.createElement('option');
+      option.value = String(table.id);
+      option.textContent = `Mesa ${table.id} · ${table.capacity} personas · ${table.zone}`;
+      reservationTableSelect.append(option);
+    });
+    reservationTableSelect.value = selectedId ? String(selectedId) : '';
+  }
+
+  function saveReservations(nextReservations) {
+    try {
+      window.localStorage.setItem(reservationStorageKey, JSON.stringify(nextReservations));
+      reservations = nextReservations;
+      renderReservations();
+      setReservationFeedback('', false);
+      return true;
+    } catch (error) {
+      setReservationFeedback('No se pudieron guardar los cambios. Revisa el almacenamiento del navegador e inténtalo de nuevo.', true);
+      return false;
+    }
+  }
+
+  function openReservationDialog(reservation) {
+    if (!reservationDialog || !reservationForm || !reservationDialogTitle) return;
+    reservationForm.reset();
+    reservationForm.elements.id.value = reservation ? String(reservation.id) : '';
+    reservationForm.elements.customer.value = reservation ? reservation.customer : '';
+    reservationForm.elements.phone.value = reservation ? reservation.phone : '';
+    reservationForm.elements.date.value = reservation ? reservation.date : getLocalDateOffset(0);
+    reservationForm.elements.date.min = getLocalDateOffset(0);
+    reservationForm.elements.time.value = reservation ? reservation.time : '';
+    reservationForm.elements.guests.value = reservation ? String(reservation.guests) : '2';
+    reservationForm.elements.notes.value = reservation ? reservation.notes || '' : '';
+    updateReservationTableOptions(reservation ? reservation.tableId : '');
+    reservationDialogTitle.textContent = reservation
+      ? `Editar reserva ${reservation.id}`
+      : 'Nueva reserva';
+    reservationDialog.showModal();
+    reservationForm.elements.customer.focus();
+  }
+
+  function loadReservations() {
+    try {
+      const savedReservations = window.localStorage.getItem(reservationStorageKey);
+      if (savedReservations === null) {
+        reservations = [];
+        renderReservations();
+        return;
+      }
+
+      const parsedReservations = JSON.parse(savedReservations);
+      const validReservations = Array.isArray(parsedReservations) && parsedReservations.every(function (reservation) {
+        return reservation &&
+          Number.isInteger(reservation.id) &&
+          typeof reservation.customer === 'string' &&
+          typeof reservation.phone === 'string' &&
+          /^\d{4}-\d{2}-\d{2}$/.test(reservation.date) &&
+          /^\d{2}:\d{2}$/.test(reservation.time) &&
+          Number.isInteger(reservation.guests) &&
+          reservation.guests > 0 &&
+          (reservation.tableId === null || Number.isInteger(reservation.tableId)) &&
+          (reservation.notes === undefined || typeof reservation.notes === 'string');
+      });
+
+      if (!validReservations) {
+        throw new Error('El formato de las reservas guardadas no es válido.');
+      }
+
+      reservations = parsedReservations;
+      renderReservations();
+    } catch (error) {
+      setReservationFeedback('No se pudieron cargar las reservas guardadas. No se mostrarán datos para evitar perder información.', true);
+      const createReservationButton = document.getElementById('create-reservation');
+      if (createReservationButton) createReservationButton.disabled = true;
+    }
+  }
+
+  if (reservationRows && reservationDialog && reservationForm) {
+    loadReservations();
+
+    document.getElementById('create-reservation').addEventListener('click', function () {
+      openReservationDialog(null);
+    });
+
+    reservationForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (!reservationForm.reportValidity()) return;
+
+      const formData = new FormData(reservationForm);
+      const idValue = formData.get('id');
+      const editedId = idValue ? Number(idValue) : null;
+      const customer = String(formData.get('customer')).trim();
+      const phone = String(formData.get('phone')).trim();
+      if (!customer || !phone) {
+        setReservationFeedback('Ingresa el nombre y teléfono del cliente.', true);
+        return;
+      }
+
+      const reservationDate = String(formData.get('date'));
+      if (reservationDate < getLocalDateOffset(0)) {
+        setReservationFeedback('La fecha de la reserva no puede ser anterior a hoy.', true);
+        return;
+      }
+
+      const selectedTableId = String(formData.get('tableId'));
+      const nextReservation = {
+        id: editedId || reservations.reduce(function (maxId, reservation) {
+          return Math.max(maxId, reservation.id);
+        }, 0) + 1,
+        customer: customer,
+        phone: phone,
+        date: reservationDate,
+        time: String(formData.get('time')),
+        guests: Number(formData.get('guests')),
+        tableId: selectedTableId ? Number(selectedTableId) : null,
+        notes: String(formData.get('notes')).trim()
+      };
+      const nextReservations = editedId
+        ? reservations.map(function (reservation) {
+          return reservation.id === editedId ? nextReservation : reservation;
+        })
+        : reservations.concat(nextReservation);
+
+      if (saveReservations(nextReservations)) reservationDialog.close();
+    });
+
+    reservationRows.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-reservation-action]');
+      if (!button) return;
+
+      const id = Number(button.dataset.reservationId);
+      const reservation = reservations.find(function (item) {
+        return item.id === id;
+      });
+      if (!reservation) return;
+
+      if (button.dataset.reservationAction === 'edit') {
+        openReservationDialog(reservation);
+      } else if (button.dataset.reservationAction === 'delete' && window.confirm(`¿Eliminar la reserva ${id} de ${reservation.customer}?`)) {
+        saveReservations(reservations.filter(function (item) {
+          return item.id !== id;
+        }));
+      }
+    });
+
+    document.getElementById('close-reservation-dialog').addEventListener('click', function () {
+      reservationDialog.close();
+    });
+    document.getElementById('cancel-reservation-dialog').addEventListener('click', function () {
+      reservationDialog.close();
     });
   }
 })();

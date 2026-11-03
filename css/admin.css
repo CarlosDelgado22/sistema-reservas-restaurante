@@ -865,7 +865,8 @@ button {
 }
 
 .table-field input,
-.table-field select {
+.table-field select,
+.table-field textarea {
   width: 100%;
   min-height: 43px;
   padding: 0 12px;
@@ -877,8 +878,15 @@ button {
   font-size: 13px;
 }
 
+.table-field textarea {
+  min-height: 78px;
+  padding-top: 11px;
+  resize: vertical;
+}
+
 .table-field input:focus,
-.table-field select:focus {
+.table-field select:focus,
+.table-field textarea:focus {
   border-color: var(--wine-400);
   outline: 2px solid rgba(139, 41, 66, 0.16);
 }
@@ -888,6 +896,63 @@ button {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 4px;
+}
+
+/* ==========================================================================
+   Gestión de reservas
+   ========================================================================== */
+
+.reservations-view {
+  padding-bottom: 30px;
+}
+
+.reservations-panel {
+  min-height: 0;
+  margin-top: 0;
+}
+
+.reservations-panel__head {
+  min-height: 71px;
+  height: auto;
+}
+
+.reservations-table {
+  min-width: 970px;
+}
+
+.reservations-table td:nth-child(2) {
+  font-weight: 500;
+}
+
+.reservation-empty {
+  margin: 0;
+  padding: 25px 16px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.reservation-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.reservation-dialog {
+  width: min(600px, calc(100vw - 32px));
+}
+
+.reservation-dialog .table-dialog__heading {
+  align-items: center;
+  margin: -26px -26px 4px;
+  padding: 21px 26px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.reservation-dialog .table-dialog__heading h2 {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  letter-spacing: 0;
 }
 
 /* ==========================================================================
@@ -1045,6 +1110,7 @@ button {
   .tables-heading {
     margin-top: 4px;
   }
+
 }
 
 @media (max-width: 760px) {
@@ -1164,6 +1230,15 @@ button {
 
   .table-form {
     padding: 22px 18px;
+  }
+
+  .reservation-form__row {
+    gap: 10px;
+  }
+
+  .reservation-dialog .table-dialog__heading {
+    margin: -22px -18px 4px;
+    padding: 17px 18px 15px;
   }
 
   .panel-head {

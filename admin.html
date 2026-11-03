@@ -65,7 +65,7 @@
           <span>Mesas</span>
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="#reservas" class="nav-item" data-admin-view-link="reservations">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3.5" y="5" width="17" height="15.5" rx="3"/>
             <path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/>
@@ -274,6 +274,48 @@
           </div>
         </section>
       </section>
+
+      <section class="reservations-view" id="reservations-view" data-admin-view hidden>
+        <div class="tables-heading">
+          <div>
+            <h1 class="page-title">Reservas</h1>
+            <p class="tables-description">Gestión de reservas de mesas</p>
+          </div>
+          <button type="button" class="button button--primary" id="create-reservation">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 5v14"/><path d="M5 12h14"/>
+            </svg>
+            Nueva reserva
+          </button>
+        </div>
+
+        <p class="table-feedback" id="reservation-feedback" role="status" aria-live="polite" hidden></p>
+
+        <section class="panel reservations-panel" aria-labelledby="reservation-history-title">
+          <header class="panel-head reservations-panel__head">
+            <h2 class="panel-title" id="reservation-history-title">Todas las reservas</h2>
+          </header>
+          <div class="table-wrap">
+            <table class="tables-table reservations-table">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Teléfono</th>
+                  <th scope="col">Mesa</th>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Hora</th>
+                  <th scope="col">Personas</th>
+                  <th scope="col">Notas</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="reservation-rows"></tbody>
+            </table>
+            <p class="reservation-empty" id="reservation-empty" hidden>Aún no hay reservas registradas. Crea una reserva para comenzar.</p>
+          </div>
+        </section>
+      </section>
     </main>
   </div>
 
@@ -307,6 +349,55 @@
       <div class="table-dialog__actions">
         <button type="button" class="button button--secondary" id="cancel-table-dialog">Cancelar</button>
         <button type="submit" class="button button--primary">Guardar mesa</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="table-dialog reservation-dialog" id="reservation-dialog" aria-labelledby="reservation-dialog-title">
+    <form class="table-form" id="reservation-form">
+      <div class="table-dialog__heading">
+        <div>
+          <h2 id="reservation-dialog-title">Nueva reserva</h2>
+        </div>
+        <button type="button" class="icon-button" id="close-reservation-dialog" aria-label="Cerrar formulario">×</button>
+      </div>
+
+      <input type="hidden" name="id">
+      <label class="table-field" for="reservation-customer">
+        Cliente
+        <input id="reservation-customer" name="customer" type="text" maxlength="80" autocomplete="name" placeholder="Nombre completo" required>
+      </label>
+      <label class="table-field" for="reservation-phone">
+        Teléfono
+        <input id="reservation-phone" name="phone" type="tel" maxlength="24" autocomplete="tel" placeholder="999 999 999" required>
+      </label>
+      <label class="table-field" for="reservation-table">
+        Mesa
+        <select id="reservation-table" name="tableId" required>
+          <option value="">Selecciona una mesa</option>
+        </select>
+      </label>
+      <div class="reservation-form__row">
+        <label class="table-field" for="reservation-date">
+          Fecha
+          <input id="reservation-date" name="date" type="date" required>
+        </label>
+        <label class="table-field" for="reservation-time">
+          Hora
+          <input id="reservation-time" name="time" type="time" required>
+        </label>
+      </div>
+      <label class="table-field" for="reservation-guests">
+        Personas
+        <input id="reservation-guests" name="guests" type="number" min="1" max="50" step="1" value="2" required>
+      </label>
+      <label class="table-field" for="reservation-notes">
+        Notas
+        <textarea id="reservation-notes" name="notes" maxlength="500" rows="3" placeholder="Alergias, celebración, etc."></textarea>
+      </label>
+      <div class="table-dialog__actions">
+        <button type="button" class="button button--secondary" id="cancel-reservation-dialog">Cancelar</button>
+        <button type="submit" class="button button--primary">Guardar reserva</button>
       </div>
     </form>
   </dialog>
