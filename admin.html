@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel de administración de Sazón: resumen de reservas, mesas, pedidos y despachos.">
+  <meta name="theme-color" content="#8b2942">
+  <title>Panel de administración · Sazón</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236e2034'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='38' fill='%23f7f3ec' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+  <header class="admin-topbar">
+    <div class="topbar-start">
+      <button type="button" class="menu-toggle" id="menu-toggle"
+              aria-label="Abrir menú" aria-expanded="false" aria-controls="admin-sidebar">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+          <path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>
+        </svg>
+      </button>
+
+      <a class="admin-brand" href="admin.html" aria-label="Sazón, ir al panel">
+        <span class="admin-brand__mark" aria-hidden="true">S</span>
+        <span class="admin-brand__name">Sazón</span>
+      </a>
+    </div>
+
+    <div class="topbar-end">
+      <span class="role-label">Administrador</span>
+
+      <button type="button" class="user-button" aria-label="Cuenta de Administrador">
+        <span class="user-name">Administrador</span>
+      </button>
+
+      <a class="logout-link" href="index.html">
+        <span>Salir</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+    <button type="button" class="sidebar-scrim" id="sidebar-scrim" aria-label="Cerrar menú" tabindex="-1"></button>
+
+    <aside class="admin-sidebar" id="admin-sidebar" aria-label="Menú principal">
+      <nav class="admin-nav">
+        <a href="#" class="nav-item is-active" aria-current="page">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="3.5" width="7" height="7" rx="2"/>
+            <rect x="13.5" y="3.5" width="7" height="7" rx="2"/>
+            <rect x="3.5" y="13.5" width="7" height="7" rx="2"/>
+            <rect x="13.5" y="13.5" width="7" height="7" rx="2"/>
+          </svg>
+          <span>Panel</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 9.5h16"/>
+            <path d="M4 14.5h16"/>
+            <path d="M6.5 9.5V6a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v3.5"/>
+            <path d="M6.5 14.5V18a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-3.5"/>
+            <path d="M8.5 12h.01"/><path d="M15.5 12h.01"/>
+          </svg>
+          <span>Mesas</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="15.5" rx="3"/>
+            <path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/>
+            <path d="M8 14h3"/><path d="M8 17h6"/>
+          </svg>
+          <span>Reservas</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 3.5v7a2.5 2.5 0 0 0 2.5 2.5H8a2.5 2.5 0 0 0 2.5-2.5v-7"/>
+            <path d="M7.75 3.5V13"/>
+            <path d="M15 3.5c-1.4 1-2.2 2.7-2.2 4.6 0 1.5.8 2.5 2.2 2.9V20"/>
+            <path d="M18.5 3.5v16.5"/>
+          </svg>
+          <span>Pedidos / Platos</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 6.5h9v9h-9z"/>
+            <path d="M12.5 9.5h4l3 3v3h-7z"/>
+            <circle cx="7" cy="17.5" r="1.8"/>
+            <circle cx="16.5" cy="17.5" r="1.8"/>
+          </svg>
+          <span>Despachos</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="8" r="3.2"/>
+            <path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/>
+            <path d="M16 5.4a3.2 3.2 0 0 1 0 5.2"/>
+            <path d="M17.4 14.6a5.5 5.5 0 0 1 3.1 4.9"/>
+          </svg>
+          <span>Usuarios</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="page-head">
+        <h1 class="page-title">
+          Resumen del día <span class="page-title__date">— <time data-today>03/11/2026</time></span>
+        </h1>
+      </div>
+
+      <section class="stats-grid" aria-label="Indicadores del día">
+        <article class="stat-card">
+          <span class="stat-icon stat-icon--blue" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/>
+              <path d="M8 3v4"/><path d="M16 3v4"/><path d="M3.5 10h17"/>
+              <path d="M8 14h2.5"/><path d="M13.5 14H16"/><path d="M8 17.2h2.5"/>
+            </svg>
+          </span>
+          <span class="stat-value">0</span>
+          <span class="stat-label">Reservas hoy</span>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-icon stat-icon--violet" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 3.5v7a2.5 2.5 0 0 0 2.5 2.5H8a2.5 2.5 0 0 0 2.5-2.5v-7"/>
+              <path d="M7.75 3.5V13"/>
+              <path d="M15 3.5c-1.4 1-2.2 2.7-2.2 4.6 0 1.5.8 2.5 2.2 2.9V20"/>
+              <path d="M18.5 3.5v16.5"/>
+            </svg>
+          </span>
+          <span class="stat-value">0</span>
+          <span class="stat-label">Platos pendientes</span>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-icon stat-icon--rose" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3.5 6.5h9v9h-9z"/>
+              <path d="M12.5 9.5h4l3 3v3h-7z"/>
+              <circle cx="7" cy="17.5" r="1.8"/>
+              <circle cx="16.5" cy="17.5" r="1.8"/>
+            </svg>
+          </span>
+          <span class="stat-value">0</span>
+          <span class="stat-label">Despachos activos</span>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-icon stat-icon--brown" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 9.5h16"/>
+              <path d="M4 14.5h16"/>
+              <path d="M6.5 9.5V6a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v3.5"/>
+              <path d="M6.5 14.5V18a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-3.5"/>
+            </svg>
+          </span>
+          <span class="stat-value">0</span>
+          <span class="stat-label">Mesas ocupadas</span>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-icon stat-icon--amber" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 10V6.5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2V10"/>
+              <path d="M4 10h16v7.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+              <path d="M8 19.5V21"/><path d="M16 19.5V21"/>
+              <path d="M8 13.5h8"/>
+            </svg>
+          </span>
+          <span class="stat-value">0</span>
+          <span class="stat-label">Mesas reservadas</span>
+        </article>
+      </section>
+
+      <section class="secondary-grid" aria-label="Pedidos">
+        <article class="stat-card stat-card--secondary">
+          <span class="stat-icon stat-icon--plum" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 3.5h9.5L19 7v13.5H6z"/>
+              <path d="M15 3.5V7h3.5"/>
+              <path d="M9 11h7"/><path d="M9 14.2h7"/><path d="M9 17.4h4"/>
+            </svg>
+          </span>
+          <span class="stat-value">0</span>
+          <span class="stat-label">Pedidos abiertos</span>
+        </article>
+      </section>
+
+      <section class="panel" aria-labelledby="today-reservations-title">
+        <header class="panel-head">
+          <h2 class="panel-title" id="today-reservations-title">Reservas de hoy</h2>
+        </header>
+
+        <div class="panel-body">
+          <div class="empty-state">
+            <span class="empty-illustration" aria-hidden="true">
+              <svg viewBox="0 0 60 59" width="60" height="59" role="presentation">
+                <defs>
+                  <linearGradient id="empty-cal-head" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#9ea2d7"/>
+                    <stop offset="0.55" stop-color="#97d2ff"/>
+                    <stop offset="1" stop-color="#a8e6ff"/>
+                  </linearGradient>
+                  <linearGradient id="empty-cal-mark" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#cbdef9"/>
+                    <stop offset="1" stop-color="#97ccf9"/>
+                  </linearGradient>
+                </defs>
+                <rect x="0" y="0" width="60" height="59" rx="7" fill="#f0e9f7"/>
+                <path d="M0 7a7 7 0 0 1 7-7h46a7 7 0 0 1 7 7v8H0Z" fill="url(#empty-cal-head)"/>
+                <g fill="#d2cdd9">
+                  <rect x="7" y="22" width="7" height="6" rx="1"/>
+                  <rect x="22" y="22" width="6" height="6" rx="1"/>
+                  <rect x="38" y="22" width="6" height="6" rx="1"/>
+                  <rect x="7" y="33" width="7" height="7" rx="1"/>
+                  <rect x="22" y="33" width="6" height="7" rx="1"/>
+                  <rect x="38" y="33" width="6" height="7" rx="1"/>
+                  <rect x="7" y="45" width="7" height="6" rx="1"/>
+                  <rect x="22" y="45" width="6" height="6" rx="1"/>
+                  <rect x="38" y="45" width="6" height="6" rx="1"/>
+                </g>
+                <rect x="40" y="32" width="8" height="8" rx="1.4" fill="url(#empty-cal-mark)"/>
+              </svg>
+            </span>
+            <p class="empty-title">No hay reservas registradas</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
