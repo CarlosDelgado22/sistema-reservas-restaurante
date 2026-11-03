@@ -84,7 +84,7 @@
           <span>Pedidos / Platos</span>
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="#despachos" class="nav-item" data-admin-view-link="dispatches">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3.5 6.5h9v9h-9z"/>
             <path d="M12.5 9.5h4l3 3v3h-7z"/>
@@ -356,6 +356,30 @@
           </div>
         </section>
       </section>
+
+      <section class="dispatches-view" id="dispatches-view" data-admin-view hidden>
+        <div class="dispatches-heading">
+          <h1 class="page-title">Despachos</h1>
+          <p class="tables-description">Entrega de platos a las mesas</p>
+        </div>
+
+        <p class="table-feedback" id="dispatch-feedback" role="status" aria-live="polite" hidden></p>
+
+        <section class="dispatch-stats" aria-label="Resumen de despachos">
+          <article class="dispatch-stat">
+            <span class="dispatch-stat__icon" aria-hidden="true">🛵</span>
+            <strong class="dispatch-stat__value" id="active-dispatches-count">0</strong>
+            <span class="dispatch-stat__label">Despachos activos</span>
+          </article>
+          <article class="dispatch-stat">
+            <span class="dispatch-stat__icon" aria-hidden="true">🍽️</span>
+            <strong class="dispatch-stat__value" id="dishes-to-deliver-count">0</strong>
+            <span class="dispatch-stat__label">Platos por entregar</span>
+          </article>
+        </section>
+
+        <section class="dispatch-list" id="dispatch-list" aria-label="Pedidos listos para entregar"></section>
+      </section>
     </main>
   </div>
 
@@ -467,6 +491,7 @@
         <select id="order-status" name="status" required>
           <option value="Pendiente">Pendiente</option>
           <option value="Preparado">Preparado</option>
+          <option value="En despacho">En despacho</option>
           <option value="Entregado">Entregado</option>
         </select>
       </label>

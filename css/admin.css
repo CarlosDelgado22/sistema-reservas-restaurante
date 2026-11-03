@@ -1109,6 +1109,139 @@ button {
 }
 
 /* ==========================================================================
+   Gestión de despachos
+   ========================================================================== */
+
+.dispatches-view {
+  padding: 18px 0 30px;
+}
+
+.dispatches-heading {
+  margin-bottom: 30px;
+}
+
+.dispatches-heading .page-title {
+  color: var(--wine-500);
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.dispatches-heading .tables-description {
+  margin-top: 9px;
+  font-size: 15px;
+}
+
+.dispatch-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.dispatch-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 190px;
+  padding: 30px 25px 24px;
+  border: 1px solid #e0d8d0;
+  border-radius: var(--radius-card);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.dispatch-stat__icon {
+  font-size: 29px;
+  line-height: 1;
+}
+
+.dispatch-stat__value {
+  margin-top: 30px;
+  color: #d29a1e;
+  font-family: var(--font-display);
+  font-size: 31px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dispatch-stat__label {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.dispatch-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.dispatch-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 235px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.dispatch-empty__icon {
+  margin-bottom: 18px;
+  font-size: 44px;
+  opacity: 0.52;
+}
+
+.dispatch-empty__message {
+  margin: 0;
+  font-size: 16px;
+}
+
+.dispatch-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid #e0d8d0;
+  border-radius: var(--radius-card);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.dispatch-card__heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.dispatch-card__heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dispatch-card__items {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 13px;
+  list-style: none;
+}
+
+.dispatch-card__action {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 
@@ -1416,6 +1549,40 @@ button {
 
   .order-dialog__actions {
     flex-wrap: wrap;
+  }
+
+  .dispatches-view {
+    padding-top: 4px;
+  }
+
+  .dispatches-heading {
+    margin-bottom: 22px;
+  }
+
+  .dispatches-heading .page-title {
+    font-size: 30px;
+  }
+
+  .dispatch-stats {
+    gap: 12px;
+  }
+
+  .dispatch-stat {
+    min-height: 154px;
+    padding: 22px 18px 18px;
+  }
+
+  .dispatch-stat__value {
+    margin-top: 22px;
+    font-size: 27px;
+  }
+
+  .dispatch-stat__label {
+    font-size: 12px;
+  }
+
+  .dispatch-empty {
+    min-height: 190px;
   }
 
   .panel-head {

@@ -598,6 +598,10 @@
   const orderTotal = document.getElementById('order-total');
   const orderEmpty = document.getElementById('order-empty');
   const pendingDishesCount = document.getElementById('pending-dishes-count');
+  const dispatchList = document.getElementById('dispatch-list');
+  const dispatchFeedback = document.getElementById('dispatch-feedback');
+  const activeDispatchesCount = document.getElementById('active-dispatches-count');
+  const dishesToDeliverCount = document.getElementById('dishes-to-deliver-count');
   const orderStorageKey = 'sazon-admin-orders';
   const menuDishes = [
     { id: 'ceviche', name: 'Ceviche clásico', price: 18 },
@@ -609,6 +613,7 @@
   const orderStatuses = {
     Pendiente: 'pending',
     Preparado: 'prepared',
+    'En despacho': 'dispatching',
     Entregado: 'delivered'
   };
   let orders = [];
@@ -699,6 +704,78 @@
         }, 0);
       }, 0)
     );
+    renderDispatches();
+  }
+
+  function setDispatchFeedback(message, isError) {
+    if (!dispatchFeedback) return;
+    dispatchFeedback.textContent = message;
+    dispatchFeedback.classList.toggle('is-error', isError);
+    dispatchFeedback.hidden = !message;
+  }
+
+  function renderDispatches() {
+    if (!dispatchList || !activeDispatchesCount || !dishesToDeliverCount) return;
+
+    const deliverableOrders = orders.filter(function (order) {
+      return order.status === 'Preparado' || order.status === 'En despacho';
+    });
+    const activeOrders = deliverableOrders.filter(function (order) {
+      return order.status === 'En despacho';
+    });
+    activeDispatchesCount.textContent = String(activeOrders.length);
+    dishesToDeliverCount.textContent = String(deliverableOrders.reduce(function (total, order) {
+      return total + order.items.reduce(function (count, item) {
+        return count + item.quantity;
+      }, 0);
+    }, 0));
+    dispatchList.replaceChildren();
+
+    if (deliverableOrders.length === 0) {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'dispatch-empty';
+      const icon = document.createElement('span');
+      icon.className = 'dispatch-empty__icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = '🛵';
+      const message = document.createElement('p');
+      message.className = 'dispatch-empty__message';
+      message.textContent = 'No hay despachos registrados';
+      emptyState.append(icon, message);
+      dispatchList.append(emptyState);
+      return;
+    }
+
+    deliverableOrders.forEach(function (order) {
+      const card = document.createElement('article');
+      card.className = 'dispatch-card';
+      const heading = document.createElement('div');
+      heading.className = 'dispatch-card__heading';
+      const title = document.createElement('h2');
+      const assignedTable = tables.find(function (table) {
+        return table.id === order.tableId;
+      });
+      title.textContent = assignedTable ? `Pedido #${order.id} · Mesa ${assignedTable.id}` : `Pedido #${order.id}`;
+      heading.append(title, makeOrderStatus(order.status));
+
+      const items = document.createElement('ul');
+      items.className = 'dispatch-card__items';
+      order.items.forEach(function (item) {
+        const line = document.createElement('li');
+        line.textContent = `${item.quantity} × ${item.name}`;
+        items.append(line);
+      });
+
+      const action = document.createElement('button');
+      action.type = 'button';
+      action.className = 'button button--primary dispatch-card__action';
+      action.dataset.dispatchAction = order.status === 'Preparado' ? 'start' : 'complete';
+      action.dataset.orderId = String(order.id);
+      action.textContent = order.status === 'Preparado' ? 'Iniciar despacho' : 'Marcar entregado';
+
+      card.append(heading, items, action);
+      dispatchList.append(card);
+    });
   }
 
   function updateOrderTableOptions(selectedId) {
@@ -945,6 +1022,33 @@
     });
     document.getElementById('cancel-order-dialog').addEventListener('click', function () {
       orderDialog.close();
+    });
+
+    dispatchList.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-dispatch-action]');
+      if (!button) return;
+
+      const orderId = Number(button.dataset.orderId);
+      const order = orders.find(function (item) {
+        return item.id === orderId;
+      });
+      if (!order) return;
+
+      const nextStatus = button.dataset.dispatchAction === 'start'
+        ? 'En despacho'
+        : 'Entregado';
+      const updatedOrders = orders.map(function (item) {
+        return item.id === orderId ? { ...item, status: nextStatus } : item;
+      });
+
+      if (saveOrders(updatedOrders)) {
+        setDispatchFeedback(
+          nextStatus === 'En despacho'
+            ? `El pedido ${orderId} está en despacho.`
+            : `El pedido ${orderId} se marcó como entregado.`,
+          false
+        );
+      }
     });
   }
 })();
