@@ -1,0 +1,709 @@
+/* ==========================================================================
+   Sazón · Sistema de reservas
+   Vista: Inicio de sesión
+   ========================================================================== */
+
+:root {
+  --wine-950: #3d0e1c;
+  --wine-900: #4a1121;
+  --wine-800: #5c1a2c;
+  --wine-700: #6e2034;
+  --wine-600: #7a243a;
+  --wine-500: #8b2942;
+  --wine-400: #a13a55;
+
+  --cream: #f7f3ec;
+  --cream-dim: rgba(247, 243, 236, 0.64);
+  --gold: #d9b47c;
+
+  --ink: #2b2622;
+  --muted: #7a6f66;
+  --muted-soft: #a3968a;
+  --line: #e9e2d8;
+  --white: #ffffff;
+
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+
+  --shadow-card:
+    0 50px 90px -40px rgba(30, 4, 12, 0.8),
+    0 18px 40px -30px rgba(30, 4, 12, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+body.auth-body {
+  min-height: 100vh;
+  min-height: 100svh;
+  background: var(--wine-800);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ==========================================================================
+   Fondo editorial
+   ========================================================================== */
+
+.login-page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(28px, 6vh, 64px) 20px;
+  overflow: hidden;
+  background:
+    radial-gradient(90% 55% at 50% -8%, rgba(255, 255, 255, 0.14), transparent 62%),
+    radial-gradient(60% 45% at 100% 18%, rgba(217, 180, 124, 0.1), transparent 70%),
+    linear-gradient(165deg, #7a243a 0%, #651c30 52%, #4a1121 100%);
+}
+
+/* Grano sutil para dar textura a la fotografía de fondo */
+.login-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.login-decor {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login-decor--one {
+  top: -22%;
+  left: -18%;
+  width: min(72vw, 700px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(247, 243, 236, 0.1);
+  box-shadow: inset 0 0 140px rgba(255, 255, 255, 0.035);
+}
+
+.login-decor--one::after {
+  content: "";
+  position: absolute;
+  inset: 13%;
+  border: 1px solid rgba(247, 243, 236, 0.06);
+  border-radius: inherit;
+}
+
+.login-decor--two {
+  right: -16%;
+  bottom: -16%;
+  width: min(58vw, 560px);
+  aspect-ratio: 1;
+  background: radial-gradient(circle at 35% 35%, rgba(247, 243, 236, 0.1), transparent 62%);
+}
+
+.login-arch {
+  position: absolute;
+  left: 50%;
+  bottom: -42vh;
+  z-index: -1;
+  width: 150vw;
+  height: 72vh;
+  transform: translateX(-50%);
+  border-top: 1px solid rgba(247, 243, 236, 0.1);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: linear-gradient(180deg, rgba(247, 243, 236, 0.06), rgba(247, 243, 236, 0.015));
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Composición
+   ========================================================================== */
+
+.login-shell {
+  width: min(100%, 428px);
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(18px, 2.6vh, 26px);
+}
+
+/* ---------- Marca ---------- */
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  color: var(--cream);
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.brand-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(217, 180, 124, 0.55);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  box-shadow:
+    inset 0 0 0 4px rgba(255, 255, 255, 0.03),
+    0 14px 34px -14px rgba(0, 0, 0, 0.6);
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  color: var(--cream);
+}
+
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(217, 180, 124, 0.28);
+  border-radius: inherit;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.015em;
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.brand-tagline {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+}
+
+/* ---------- Tarjeta ---------- */
+
+.login-card {
+  position: relative;
+  width: 100%;
+  padding: 32px 36px 28px;
+  border-radius: 28px;
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+  color: var(--ink);
+  animation: rise 0.8s 0.08s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.login-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 36px;
+  right: 36px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(217, 180, 124, 0.85), transparent);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wine-500);
+}
+
+.eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.card-head h1 {
+  margin: 12px 0 8px;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+
+.card-head h1 em {
+  font-style: italic;
+  color: var(--wine-500);
+}
+
+.card-head p {
+  max-width: 94%;
+  margin: 0 0 24px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* ---------- Formulario ---------- */
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.field-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 0 9px;
+  border-bottom: 1px solid var(--line);
+  transition: border-color 0.2s ease;
+}
+
+.field-control::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--wine-500);
+  transition: width 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.field-control:focus-within {
+  border-color: transparent;
+}
+
+.field-control:focus-within::after {
+  width: 100%;
+}
+
+.field-control > svg {
+  flex: none;
+  color: var(--muted-soft);
+  transition: color 0.2s ease;
+}
+
+.field-control:focus-within > svg {
+  color: var(--wine-500);
+}
+
+.field-control input {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  color: var(--ink);
+  caret-color: var(--wine-500);
+}
+
+.field-control input::placeholder {
+  color: #b6aa9e;
+}
+
+.field-control input:focus-visible {
+  outline: none;
+}
+
+.field-control input:-webkit-autofill,
+.field-control input:-webkit-autofill:hover,
+.field-control input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  box-shadow: 0 0 0 100px var(--white) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Mostrar / ocultar contraseña */
+.password-toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted-soft);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: var(--wine-500);
+  background: rgba(139, 41, 66, 0.06);
+}
+
+.password-toggle .icon-eye-off {
+  display: none;
+}
+
+.password-toggle.is-visible .icon-eye {
+  display: none;
+}
+
+.password-toggle.is-visible .icon-eye-off {
+  display: block;
+}
+
+/* Recordarme / enlace */
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--wine-500);
+  cursor: pointer;
+}
+
+.text-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wine-500);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.text-link:hover {
+  color: var(--wine-700);
+  border-bottom-color: rgba(139, 41, 66, 0.35);
+}
+
+/* Botón principal */
+.btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 54px;
+  padding: 7px 7px 7px 22px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #932c48 0%, #7a2037 100%);
+  box-shadow: 0 18px 32px -16px rgba(139, 41, 66, 0.75);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-login:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #9c304d 0%, #82233c 100%);
+  box-shadow: 0 22px 38px -16px rgba(139, 41, 66, 0.85);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+  box-shadow: 0 12px 24px -14px rgba(139, 41, 66, 0.8);
+}
+
+.btn-arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.13);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-login:hover .btn-arrow {
+  transform: translateX(2px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---------- Accesos de demostración ---------- */
+
+.demo-access {
+  width: 100%;
+  color: rgba(247, 243, 236, 0.65);
+  font-size: 11.5px;
+  animation: rise 0.8s 0.14s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.demo-access summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 2px 4px;
+  list-style: none;
+  color: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.demo-access summary::-webkit-details-marker {
+  display: none;
+}
+
+.demo-access summary:hover {
+  color: var(--cream);
+}
+
+.demo-access summary svg {
+  transition: transform 0.25s ease;
+}
+
+.demo-access[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  animation: rise 0.25s ease both;
+}
+
+.demo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(247, 243, 236, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--cream);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.demo-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(217, 180, 124, 0.45);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.demo-item:active {
+  transform: translateY(0);
+}
+
+.demo-user {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.demo-pass {
+  overflow: hidden;
+  color: rgba(247, 243, 236, 0.5);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Pie de página ---------- */
+
+.login-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(247, 243, 236, 0.52);
+  animation: rise 0.8s 0.16s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.login-footer .dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.75;
+}
+
+/* ==========================================================================
+   Accesibilidad y movimiento
+   ========================================================================== */
+
+::selection {
+  background: rgba(139, 41, 66, 0.18);
+  color: var(--wine-900);
+}
+
+:focus-visible {
+  outline: 2px solid rgba(139, 41, 66, 0.45);
+  outline-offset: 3px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  border-radius: 6px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 520px) {
+  .login-page {
+    padding: 26px 16px;
+  }
+
+  .login-shell {
+    gap: 22px;
+  }
+
+  .brand-mark {
+    width: 50px;
+    height: 50px;
+    font-size: 27px;
+  }
+
+  .brand-name {
+    font-size: 36px;
+  }
+
+  .brand-tagline {
+    letter-spacing: 0.26em;
+    font-size: 9px;
+  }
+
+  .login-card {
+    padding: 30px 24px 24px;
+    border-radius: 24px;
+  }
+
+  .login-card::before {
+    left: 24px;
+    right: 24px;
+  }
+
+  .card-head h1 {
+    font-size: 32px;
+  }
+
+  .card-head p {
+    max-width: 100%;
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+
+  .form-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .login-footer {
+    font-size: 8.5px;
+    letter-spacing: 0.13em;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-card {
+    padding: 26px 20px 22px;
+  }
+
+  .demo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-head h1 {
+    font-size: 29px;
+  }
+
+  .btn-login {
+    padding-left: 18px;
+    font-size: 11.5px;
+  }
+}

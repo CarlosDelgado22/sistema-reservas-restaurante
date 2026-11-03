@@ -3,12 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Reservas</title>
+  <meta name="description" content="Inicia sesión en Sazón, el sistema de reservas de tu restaurante.">
+  <meta name="theme-color" content="#6e2034">
+  <title>Iniciar sesión · Sazón</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236e2034'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='38' fill='%23f7f3ec' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-  <div id="app"></div>
+<body class="auth-body">
 
+  <div class="login-page">
+    <span class="login-decor login-decor--one" aria-hidden="true"></span>
+    <span class="login-decor login-decor--two" aria-hidden="true"></span>
+    <span class="login-arch" aria-hidden="true"></span>
+
+    <div class="login-shell">
+
+      <header class="login-brand">
+        <div class="brand-mark" aria-hidden="true">S</div>
+        <div class="brand-copy">
+          <span class="brand-name">Sazón</span>
+          <span class="brand-tagline">Reservas &amp; experiencias</span>
+        </div>
+      </header>
+
+      <main class="login-card">
+        <div class="card-head">
+          <span class="eyebrow">Acceso al panel</span>
+          <h1>Bienvenido<br><em>de nuevo</em></h1>
+          <p>Ingresa tus credenciales para administrar las reservas y mesas de tu restaurante.</p>
+        </div>
+
+        <form class="login-form" id="login-form" novalidate>
+          <div class="field">
+            <label for="username">Usuario</label>
+            <div class="field-control">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>
+              </svg>
+              <input type="text" id="username" name="username" placeholder="admin"
+                     autocomplete="username" autocapitalize="none" spellcheck="false" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Contraseña</label>
+            <div class="field-control">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="4" y="10" width="16" height="11" rx="3"/>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                <path d="M12 15v2"/>
+              </svg>
+              <input type="password" id="password" name="password" placeholder="••••••••"
+                     autocomplete="current-password" required minlength="6">
+
+              <button type="button" class="password-toggle" id="password-toggle"
+                      aria-label="Mostrar contraseña" aria-pressed="false">
+                <svg class="icon-eye" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2.5 12S6 5.5 12 5.5c1.5 0 2.9.4 4.1 1.1M21.5 12S18 18.5 12 18.5c-1.5 0-2.9-.4-4.1-1.1"/>
+                  <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+                  <path d="m3 3 18 18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="check">
+              <input type="checkbox" name="remember" value="si">
+              <span>Recordarme</span>
+            </label>
+            <a class="text-link" href="#">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button class="btn-login" type="submit">
+            <span>Iniciar sesión</span>
+            <span class="btn-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/>
+                <path d="m13 6 6 6-6 6"/>
+              </svg>
+            </span>
+          </button>
+        </form>
+      </main>
+
+      <details class="demo-access">
+        <summary>
+          <span>Usuarios de demostración</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </summary>
+
+        <div class="demo-grid">
+          <button type="button" class="demo-item" data-demo-user="admin" data-demo-pass="admin123" title="Usar credenciales de admin">
+            <span class="demo-user">admin</span>
+            <span class="demo-pass">admin123</span>
+          </button>
+          <button type="button" class="demo-item" data-demo-user="mesero" data-demo-pass="mesero123" title="Usar credenciales de mesero">
+            <span class="demo-user">mesero</span>
+            <span class="demo-pass">mesero123</span>
+          </button>
+          <button type="button" class="demo-item" data-demo-user="cocina" data-demo-pass="cocina123" title="Usar credenciales de cocina">
+            <span class="demo-user">cocina</span>
+            <span class="demo-pass">cocina123</span>
+          </button>
+          <button type="button" class="demo-item" data-demo-user="despacho" data-demo-pass="despacho123" title="Usar credenciales de despacho">
+            <span class="demo-user">despacho</span>
+            <span class="demo-pass">despacho123</span>
+          </button>
+        </div>
+      </details>
+
+      <footer class="login-footer">
+        <span>© 2026 Sazón</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>Gestión de reservas</span>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- Orden importante: storage → auth → modules → app -->
   <script src="js/storage.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/modules.js"></script>
