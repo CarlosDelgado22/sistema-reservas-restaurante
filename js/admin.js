@@ -598,10 +598,6 @@
   const orderTotal = document.getElementById('order-total');
   const orderEmpty = document.getElementById('order-empty');
   const pendingDishesCount = document.getElementById('pending-dishes-count');
-  const dispatchList = document.getElementById('dispatch-list');
-  const dispatchFeedback = document.getElementById('dispatch-feedback');
-  const activeDispatchesCount = document.getElementById('active-dispatches-count');
-  const dishesToDeliverCount = document.getElementById('dishes-to-deliver-count');
   const orderStorageKey = 'sazon-admin-orders';
   const menuDishes = [
     { id: 'ceviche', name: 'Ceviche clásico', price: 18 },
@@ -613,7 +609,6 @@
   const orderStatuses = {
     Pendiente: 'pending',
     Preparado: 'prepared',
-    'En despacho': 'dispatching',
     Entregado: 'delivered'
   };
   let orders = [];
@@ -704,78 +699,6 @@
         }, 0);
       }, 0)
     );
-    renderDispatches();
-  }
-
-  function setDispatchFeedback(message, isError) {
-    if (!dispatchFeedback) return;
-    dispatchFeedback.textContent = message;
-    dispatchFeedback.classList.toggle('is-error', isError);
-    dispatchFeedback.hidden = !message;
-  }
-
-  function renderDispatches() {
-    if (!dispatchList || !activeDispatchesCount || !dishesToDeliverCount) return;
-
-    const deliverableOrders = orders.filter(function (order) {
-      return order.status === 'Preparado' || order.status === 'En despacho';
-    });
-    const activeOrders = deliverableOrders.filter(function (order) {
-      return order.status === 'En despacho';
-    });
-    activeDispatchesCount.textContent = String(activeOrders.length);
-    dishesToDeliverCount.textContent = String(deliverableOrders.reduce(function (total, order) {
-      return total + order.items.reduce(function (count, item) {
-        return count + item.quantity;
-      }, 0);
-    }, 0));
-    dispatchList.replaceChildren();
-
-    if (deliverableOrders.length === 0) {
-      const emptyState = document.createElement('div');
-      emptyState.className = 'dispatch-empty';
-      const icon = document.createElement('span');
-      icon.className = 'dispatch-empty__icon';
-      icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = '🛵';
-      const message = document.createElement('p');
-      message.className = 'dispatch-empty__message';
-      message.textContent = 'No hay despachos registrados';
-      emptyState.append(icon, message);
-      dispatchList.append(emptyState);
-      return;
-    }
-
-    deliverableOrders.forEach(function (order) {
-      const card = document.createElement('article');
-      card.className = 'dispatch-card';
-      const heading = document.createElement('div');
-      heading.className = 'dispatch-card__heading';
-      const title = document.createElement('h2');
-      const assignedTable = tables.find(function (table) {
-        return table.id === order.tableId;
-      });
-      title.textContent = assignedTable ? `Pedido #${order.id} · Mesa ${assignedTable.id}` : `Pedido #${order.id}`;
-      heading.append(title, makeOrderStatus(order.status));
-
-      const items = document.createElement('ul');
-      items.className = 'dispatch-card__items';
-      order.items.forEach(function (item) {
-        const line = document.createElement('li');
-        line.textContent = `${item.quantity} × ${item.name}`;
-        items.append(line);
-      });
-
-      const action = document.createElement('button');
-      action.type = 'button';
-      action.className = 'button button--primary dispatch-card__action';
-      action.dataset.dispatchAction = order.status === 'Preparado' ? 'start' : 'complete';
-      action.dataset.orderId = String(order.id);
-      action.textContent = order.status === 'Preparado' ? 'Iniciar despacho' : 'Marcar entregado';
-
-      card.append(heading, items, action);
-      dispatchList.append(card);
-    });
   }
 
   function updateOrderTableOptions(selectedId) {
@@ -1023,32 +946,190 @@
     document.getElementById('cancel-order-dialog').addEventListener('click', function () {
       orderDialog.close();
     });
+  }
 
-    dispatchList.addEventListener('click', function (event) {
-      const button = event.target.closest('[data-dispatch-action]');
+  const userRows = document.getElementById('user-rows');
+  const userEmpty = document.getElementById('user-empty');
+  const userFeedback = document.getElementById('user-feedback');
+  const userDialog = document.getElementById('user-dialog');
+  const userForm = document.getElementById('user-form');
+  const userDialogTitle = document.getElementById('user-dialog-title');
+  const createUserButton = document.getElementById('create-user');
+  const resetDemoUsersButton = document.getElementById('reset-demo-users');
+  const userStorageKey = 'sazon-admin-users';
+  const demoUsers = [
+    { id: 1, name: 'Administrador', username: 'admin', role: 'Administrador' },
+    { id: 2, name: 'Carlos Mesero', username: 'mesero', role: 'Mesero' },
+    { id: 3, name: 'Ana Cocina', username: 'cocina', role: 'Cocina' },
+    { id: 4, name: 'Luis Despacho', username: 'despacho', role: 'Despacho' }
+  ];
+  const userRoleClasses = {
+    Administrador: 'admin',
+    Mesero: 'server',
+    Cocina: 'kitchen',
+    Despacho: 'dispatch'
+  };
+  let users = [];
+
+  function setUserFeedback(message, isError) {
+    if (!userFeedback) return;
+    userFeedback.textContent = message;
+    userFeedback.classList.toggle('is-error', isError);
+    userFeedback.hidden = !message;
+  }
+
+  function saveUsers(nextUsers, successMessage) {
+    try {
+      window.localStorage.setItem(userStorageKey, JSON.stringify(nextUsers));
+      users = nextUsers;
+      renderUsers();
+      setUserFeedback(successMessage || '', false);
+      return true;
+    } catch (error) {
+      setUserFeedback('No se pudieron guardar los cambios. Revisa el almacenamiento del navegador e inténtalo de nuevo.', true);
+      return false;
+    }
+  }
+
+  function renderUsers() {
+    if (!userRows || !userEmpty) return;
+
+    userRows.replaceChildren();
+    users.forEach(function (user) {
+      const row = document.createElement('tr');
+      row.append(makeCell(user.name), makeCell(user.username));
+
+      const roleCell = document.createElement('td');
+      const roleBadge = document.createElement('span');
+      roleBadge.className = `user-role user-role--${userRoleClasses[user.role]}`;
+      roleBadge.textContent = user.role;
+      roleCell.append(roleBadge);
+      row.append(roleCell);
+
+      const actions = document.createElement('td');
+      actions.className = 'table-actions';
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'button button--small button--danger';
+      deleteButton.dataset.userAction = 'delete';
+      deleteButton.dataset.userId = String(user.id);
+      deleteButton.textContent = 'Eliminar';
+      deleteButton.setAttribute('aria-label', `Eliminar usuario ${user.username}`);
+      actions.append(deleteButton);
+      row.append(actions);
+      userRows.append(row);
+    });
+
+    userEmpty.hidden = users.length !== 0;
+  }
+
+  function loadUsers() {
+    try {
+      const savedUsers = window.localStorage.getItem(userStorageKey);
+      if (savedUsers === null) {
+        saveUsers(demoUsers);
+        return;
+      }
+
+      const parsedUsers = JSON.parse(savedUsers);
+      const validRoles = Object.keys(userRoleClasses);
+      const validUsers = Array.isArray(parsedUsers) && parsedUsers.every(function (user) {
+        return user &&
+          Number.isInteger(user.id) &&
+          user.id > 0 &&
+          typeof user.name === 'string' &&
+          user.name.trim().length > 0 &&
+          typeof user.username === 'string' &&
+          user.username.trim().length > 0 &&
+          validRoles.includes(user.role);
+      });
+
+      if (!validUsers) {
+        throw new Error('El formato de los usuarios guardados no es válido.');
+      }
+
+      users = parsedUsers;
+      renderUsers();
+    } catch (error) {
+      setUserFeedback('No se pudieron cargar los usuarios guardados. No se mostrarán datos para evitar perder información.', true);
+      if (createUserButton) createUserButton.disabled = true;
+    }
+  }
+
+  function openUserDialog() {
+    if (!userDialog || !userForm || !userDialogTitle) return;
+    userForm.reset();
+    userDialogTitle.textContent = 'Nuevo usuario';
+    userDialog.showModal();
+    userForm.elements.name.focus();
+  }
+
+  if (userRows && userDialog && userForm) {
+    loadUsers();
+
+    createUserButton.addEventListener('click', openUserDialog);
+
+    resetDemoUsersButton.addEventListener('click', function () {
+      if (window.confirm('¿Restaurar las cuatro cuentas demo? Esta acción reemplazará la lista actual de usuarios.')) {
+        saveUsers(demoUsers, 'Se restablecieron los usuarios demo.');
+      }
+    });
+
+    userForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (!userForm.reportValidity()) return;
+
+      const formData = new FormData(userForm);
+      const name = String(formData.get('name')).trim();
+      const username = String(formData.get('username')).trim().toLowerCase();
+      const role = String(formData.get('role'));
+      const usernameExists = users.some(function (user) {
+        return user.username.toLowerCase() === username;
+      });
+
+      if (!name || !username) {
+        setUserFeedback('Ingresa el nombre y el usuario.', true);
+        return;
+      }
+      if (usernameExists) {
+        setUserFeedback('Ese nombre de usuario ya está registrado. Elige otro.', true);
+        return;
+      }
+
+      const nextUser = {
+        id: users.reduce(function (maxId, user) {
+          return Math.max(maxId, user.id);
+        }, 0) + 1,
+        name: name,
+        username: username,
+        role: role
+      };
+
+      if (saveUsers(users.concat(nextUser))) userDialog.close();
+    });
+
+    userRows.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-user-action="delete"]');
       if (!button) return;
 
-      const orderId = Number(button.dataset.orderId);
-      const order = orders.find(function (item) {
-        return item.id === orderId;
+      const id = Number(button.dataset.userId);
+      const user = users.find(function (item) {
+        return item.id === id;
       });
-      if (!order) return;
+      if (!user) return;
 
-      const nextStatus = button.dataset.dispatchAction === 'start'
-        ? 'En despacho'
-        : 'Entregado';
-      const updatedOrders = orders.map(function (item) {
-        return item.id === orderId ? { ...item, status: nextStatus } : item;
-      });
-
-      if (saveOrders(updatedOrders)) {
-        setDispatchFeedback(
-          nextStatus === 'En despacho'
-            ? `El pedido ${orderId} está en despacho.`
-            : `El pedido ${orderId} se marcó como entregado.`,
-          false
-        );
+      if (window.confirm(`¿Eliminar al usuario ${user.username}?`)) {
+        saveUsers(users.filter(function (item) {
+          return item.id !== id;
+        }));
       }
+    });
+
+    document.getElementById('close-user-dialog').addEventListener('click', function () {
+      userDialog.close();
+    });
+    document.getElementById('cancel-user-dialog').addEventListener('click', function () {
+      userDialog.close();
     });
   }
 })();

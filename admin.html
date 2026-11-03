@@ -84,7 +84,7 @@
           <span>Pedidos / Platos</span>
         </a>
 
-        <a href="#despachos" class="nav-item" data-admin-view-link="dispatches">
+        <a href="#" class="nav-item">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3.5 6.5h9v9h-9z"/>
             <path d="M12.5 9.5h4l3 3v3h-7z"/>
@@ -94,7 +94,7 @@
           <span>Despachos</span>
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="#usuarios" class="nav-item" data-admin-view-link="users">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="9" cy="8" r="3.2"/>
             <path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/>
@@ -357,28 +357,41 @@
         </section>
       </section>
 
-      <section class="dispatches-view" id="dispatches-view" data-admin-view hidden>
-        <div class="dispatches-heading">
-          <h1 class="page-title">Despachos</h1>
-          <p class="tables-description">Entrega de platos a las mesas</p>
+      <section class="users-view" id="users-view" data-admin-view hidden>
+        <div class="tables-heading users-heading">
+          <div>
+            <h1 class="page-title">Usuarios</h1>
+            <p class="tables-description">Administración de cuentas y roles</p>
+          </div>
+          <div class="users-heading__actions">
+            <button type="button" class="button button--primary" id="create-user">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M12 5v14"/><path d="M5 12h14"/>
+              </svg>
+              Nuevo usuario
+            </button>
+            <button type="button" class="button button--danger" id="reset-demo-users">Resetear datos demo</button>
+          </div>
         </div>
 
-        <p class="table-feedback" id="dispatch-feedback" role="status" aria-live="polite" hidden></p>
+        <p class="table-feedback" id="user-feedback" role="status" aria-live="polite" hidden></p>
 
-        <section class="dispatch-stats" aria-label="Resumen de despachos">
-          <article class="dispatch-stat">
-            <span class="dispatch-stat__icon" aria-hidden="true">🛵</span>
-            <strong class="dispatch-stat__value" id="active-dispatches-count">0</strong>
-            <span class="dispatch-stat__label">Despachos activos</span>
-          </article>
-          <article class="dispatch-stat">
-            <span class="dispatch-stat__icon" aria-hidden="true">🍽️</span>
-            <strong class="dispatch-stat__value" id="dishes-to-deliver-count">0</strong>
-            <span class="dispatch-stat__label">Platos por entregar</span>
-          </article>
+        <section class="panel users-panel" aria-label="Usuarios registrados">
+          <div class="table-wrap">
+            <table class="tables-table users-table">
+              <thead>
+                <tr>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Usuario</th>
+                  <th scope="col">Rol</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="user-rows"></tbody>
+            </table>
+            <p class="user-empty" id="user-empty" hidden>No hay usuarios registrados. Crea un usuario para comenzar.</p>
+          </div>
         </section>
-
-        <section class="dispatch-list" id="dispatch-list" aria-label="Pedidos listos para entregar"></section>
       </section>
     </main>
   </div>
@@ -491,7 +504,6 @@
         <select id="order-status" name="status" required>
           <option value="Pendiente">Pendiente</option>
           <option value="Preparado">Preparado</option>
-          <option value="En despacho">En despacho</option>
           <option value="Entregado">Entregado</option>
         </select>
       </label>
@@ -500,6 +512,39 @@
       <div class="table-dialog__actions order-dialog__actions">
         <button type="button" class="button button--secondary" id="cancel-order-dialog">Cancelar</button>
         <button type="submit" class="button button--primary">Guardar pedido</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="table-dialog user-dialog" id="user-dialog" aria-labelledby="user-dialog-title">
+    <form class="table-form" id="user-form">
+      <div class="table-dialog__heading">
+        <div>
+          <h2 id="user-dialog-title">Nuevo usuario</h2>
+        </div>
+        <button type="button" class="icon-button" id="close-user-dialog" aria-label="Cerrar formulario">×</button>
+      </div>
+
+      <label class="table-field" for="user-name">
+        Nombre
+        <input id="user-name" name="name" type="text" maxlength="80" autocomplete="name" required>
+      </label>
+      <label class="table-field" for="user-username">
+        Usuario
+        <input id="user-username" name="username" type="text" maxlength="32" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      </label>
+      <label class="table-field" for="user-role">
+        Rol
+        <select id="user-role" name="role" required>
+          <option value="Administrador">Administrador</option>
+          <option value="Mesero">Mesero</option>
+          <option value="Cocina">Cocina</option>
+          <option value="Despacho">Despacho</option>
+        </select>
+      </label>
+      <div class="table-dialog__actions">
+        <button type="button" class="button button--secondary" id="cancel-user-dialog">Cancelar</button>
+        <button type="submit" class="button button--primary">Guardar usuario</button>
       </div>
     </form>
   </dialog>
