@@ -74,7 +74,7 @@
           <span>Reservas</span>
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="#pedidos" class="nav-item" data-admin-view-link="orders">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 3.5v7a2.5 2.5 0 0 0 2.5 2.5H8a2.5 2.5 0 0 0 2.5-2.5v-7"/>
             <path d="M7.75 3.5V13"/>
@@ -316,6 +316,46 @@
           </div>
         </section>
       </section>
+
+      <section class="orders-view" id="orders-view" data-admin-view hidden>
+        <div class="tables-heading">
+          <div>
+            <h1 class="page-title">Pedidos / Platos</h1>
+            <p class="tables-description">Registro de pedidos y platos por mesa</p>
+          </div>
+          <button type="button" class="button button--primary" id="create-order">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 5v14"/><path d="M5 12h14"/>
+            </svg>
+            Nuevo pedido
+          </button>
+        </div>
+
+        <p class="table-feedback" id="order-feedback" role="status" aria-live="polite" hidden></p>
+
+        <section class="panel orders-panel" aria-labelledby="orders-title">
+          <header class="panel-head orders-panel__head">
+            <h2 class="panel-title" id="orders-title">Pedidos registrados</h2>
+            <p class="pending-dishes"><strong id="pending-dishes-count">0</strong> platos pendientes</p>
+          </header>
+          <div class="table-wrap">
+            <table class="tables-table orders-table">
+              <thead>
+                <tr>
+                  <th scope="col">Pedido</th>
+                  <th scope="col">Mesa</th>
+                  <th scope="col">Platos</th>
+                  <th scope="col">Total</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="order-rows"></tbody>
+            </table>
+            <p class="order-empty" id="order-empty" hidden>Aún no hay pedidos registrados. Crea un pedido para comenzar.</p>
+          </div>
+        </section>
+      </section>
     </main>
   </div>
 
@@ -398,6 +438,43 @@
       <div class="table-dialog__actions">
         <button type="button" class="button button--secondary" id="cancel-reservation-dialog">Cancelar</button>
         <button type="submit" class="button button--primary">Guardar reserva</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="table-dialog order-dialog" id="order-dialog" aria-labelledby="order-dialog-title">
+    <form class="table-form" id="order-form">
+      <div class="table-dialog__heading">
+        <div>
+          <h2 id="order-dialog-title">Nuevo pedido</h2>
+        </div>
+        <button type="button" class="icon-button" id="close-order-dialog" aria-label="Cerrar formulario">×</button>
+      </div>
+
+      <input type="hidden" name="id">
+      <label class="table-field" for="order-table">
+        Mesa
+        <select id="order-table" name="tableId" required>
+          <option value="">Selecciona una mesa</option>
+        </select>
+      </label>
+
+      <div class="order-items" id="order-items"></div>
+      <button type="button" class="button button--secondary order-add-item" id="add-order-item">+ Agregar plato</button>
+
+      <label class="table-field" for="order-status">
+        Estado
+        <select id="order-status" name="status" required>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Preparado">Preparado</option>
+          <option value="Entregado">Entregado</option>
+        </select>
+      </label>
+
+      <p class="order-total">Total del pedido <strong id="order-total">S/ 0.00</strong></p>
+      <div class="table-dialog__actions order-dialog__actions">
+        <button type="button" class="button button--secondary" id="cancel-order-dialog">Cancelar</button>
+        <button type="submit" class="button button--primary">Guardar pedido</button>
       </div>
     </form>
   </dialog>

@@ -956,6 +956,159 @@ button {
 }
 
 /* ==========================================================================
+   Gestión de pedidos y platos
+   ========================================================================== */
+
+.orders-view {
+  padding-bottom: 30px;
+}
+
+.orders-panel {
+  min-height: 0;
+  margin-top: 0;
+}
+
+.orders-panel__head {
+  min-height: 71px;
+  height: auto;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.pending-dishes {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.pending-dishes strong {
+  color: var(--wine-500);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.orders-table {
+  min-width: 760px;
+}
+
+.order-dishes-list {
+  display: grid;
+  gap: 5px;
+  min-width: 150px;
+  white-space: normal !important;
+}
+
+.order-dish-line {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 27px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.order-status--pending {
+  background: #fff0d6;
+  color: #885c18;
+}
+
+.order-status--prepared {
+  background: #e9e4f4;
+  color: #5e4d83;
+}
+
+.order-status--delivered {
+  background: #dcf4e3;
+  color: #286347;
+}
+
+.order-empty {
+  margin: 0;
+  padding: 25px 16px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.order-dialog {
+  width: min(650px, calc(100vw - 32px));
+}
+
+.order-dialog .table-dialog__heading {
+  align-items: center;
+  margin: -26px -26px 4px;
+  padding: 21px 26px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.order-dialog .table-dialog__heading h2 {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.order-items {
+  display: grid;
+  gap: 14px;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.8fr) 36px;
+  align-items: end;
+  gap: 12px;
+}
+
+.order-item__remove {
+  width: 36px;
+  height: 43px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.order-item__remove:hover {
+  border-color: #e7b9b9;
+  background: #fff1f1;
+  color: #8d2424;
+}
+
+.order-add-item {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 12px;
+  background: var(--cream-deep);
+  color: var(--ink);
+}
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.order-total strong {
+  color: var(--ink);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 
@@ -1239,6 +1392,30 @@ button {
   .reservation-dialog .table-dialog__heading {
     margin: -22px -18px 4px;
     padding: 17px 18px 15px;
+  }
+
+  .orders-panel__head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .order-item {
+    grid-template-columns: minmax(0, 1fr) 82px 34px;
+    gap: 8px;
+  }
+
+  .order-item__remove {
+    width: 34px;
+  }
+
+  .order-dialog .table-dialog__heading {
+    margin: -22px -18px 4px;
+    padding: 17px 18px 15px;
+  }
+
+  .order-dialog__actions {
+    flex-wrap: wrap;
   }
 
   .panel-head {

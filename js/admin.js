@@ -587,4 +587,364 @@
       reservationDialog.close();
     });
   }
+
+  const orderRows = document.getElementById('order-rows');
+  const orderDialog = document.getElementById('order-dialog');
+  const orderForm = document.getElementById('order-form');
+  const orderDialogTitle = document.getElementById('order-dialog-title');
+  const orderFeedback = document.getElementById('order-feedback');
+  const orderTableSelect = document.getElementById('order-table');
+  const orderItemsContainer = document.getElementById('order-items');
+  const orderTotal = document.getElementById('order-total');
+  const orderEmpty = document.getElementById('order-empty');
+  const pendingDishesCount = document.getElementById('pending-dishes-count');
+  const orderStorageKey = 'sazon-admin-orders';
+  const menuDishes = [
+    { id: 'ceviche', name: 'Ceviche clásico', price: 18 },
+    { id: 'chaufa', name: 'Arroz chaufa', price: 16 },
+    { id: 'lomo', name: 'Lomo saltado', price: 24 },
+    { id: 'aji-gallina', name: 'Ají de gallina', price: 20 },
+    { id: 'causa', name: 'Causa rellena', price: 15 }
+  ];
+  const orderStatuses = {
+    Pendiente: 'pending',
+    Preparado: 'prepared',
+    Entregado: 'delivered'
+  };
+  let orders = [];
+
+  function setOrderFeedback(message, isError) {
+    if (!orderFeedback) return;
+    orderFeedback.textContent = message;
+    orderFeedback.classList.toggle('is-error', isError);
+    orderFeedback.hidden = !message;
+  }
+
+  function formatCurrency(amount) {
+    return `S/ ${amount.toFixed(2)}`;
+  }
+
+  function getOrderAmount(order) {
+    return order.items.reduce(function (total, item) {
+      return total + item.price * item.quantity;
+    }, 0);
+  }
+
+  function makeOrderStatus(status) {
+    const badge = document.createElement('span');
+    badge.className = `order-status order-status--${orderStatuses[status]}`;
+    badge.textContent = status;
+    return badge;
+  }
+
+  function renderOrders() {
+    if (!orderRows || !orderEmpty) return;
+
+    orderRows.replaceChildren();
+    orders.slice().sort(function (first, second) {
+      return second.id - first.id;
+    }).forEach(function (order) {
+      const row = document.createElement('tr');
+      const assignedTable = tables.find(function (table) {
+        return table.id === order.tableId;
+      });
+      row.append(
+        makeCell(`#${order.id}`),
+        makeCell(assignedTable ? `Mesa ${assignedTable.id}` : 'Mesa no disponible')
+      );
+
+      const dishesCell = document.createElement('td');
+      const dishesList = document.createElement('div');
+      dishesList.className = 'order-dishes-list';
+      order.items.forEach(function (item) {
+        const line = document.createElement('span');
+        line.className = 'order-dish-line';
+        line.textContent = `${item.quantity} × ${item.name}`;
+        dishesList.append(line);
+      });
+      dishesCell.append(dishesList);
+      row.append(dishesCell, makeCell(formatCurrency(getOrderAmount(order))));
+
+      const statusCell = document.createElement('td');
+      statusCell.append(makeOrderStatus(order.status));
+      row.append(statusCell);
+
+      const actions = document.createElement('td');
+      actions.className = 'table-actions';
+      const editButton = document.createElement('button');
+      editButton.type = 'button';
+      editButton.className = 'button button--small button--secondary';
+      editButton.dataset.orderAction = 'edit';
+      editButton.dataset.orderId = String(order.id);
+      editButton.textContent = 'Editar';
+      editButton.setAttribute('aria-label', `Editar pedido ${order.id}`);
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'button button--small button--danger';
+      deleteButton.dataset.orderAction = 'delete';
+      deleteButton.dataset.orderId = String(order.id);
+      deleteButton.textContent = 'Eliminar';
+      deleteButton.setAttribute('aria-label', `Eliminar pedido ${order.id}`);
+      actions.append(editButton, deleteButton);
+      row.append(actions);
+      orderRows.append(row);
+    });
+
+    orderEmpty.hidden = orders.length !== 0;
+    pendingDishesCount.textContent = String(
+      orders.reduce(function (total, order) {
+        if (order.status !== 'Pendiente') return total;
+        return total + order.items.reduce(function (count, item) {
+          return count + item.quantity;
+        }, 0);
+      }, 0)
+    );
+  }
+
+  function updateOrderTableOptions(selectedId) {
+    if (!orderTableSelect) return;
+    orderTableSelect.replaceChildren();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Selecciona una mesa';
+    orderTableSelect.append(placeholder);
+
+    tables.forEach(function (table) {
+      const option = document.createElement('option');
+      option.value = String(table.id);
+      option.textContent = `Mesa ${table.id} — ${table.status.toLocaleLowerCase('es')}`;
+      orderTableSelect.append(option);
+    });
+
+    orderTableSelect.value = selectedId ? String(selectedId) : '';
+  }
+
+  function createOrderItemRow(item) {
+    const row = document.createElement('div');
+    row.className = 'order-item';
+
+    const dishLabel = document.createElement('label');
+    dishLabel.className = 'table-field';
+    dishLabel.textContent = 'Plato';
+    const dishSelect = document.createElement('select');
+    dishSelect.name = 'dish';
+    dishSelect.required = true;
+    menuDishes.forEach(function (dish) {
+      const option = document.createElement('option');
+      option.value = dish.id;
+      option.textContent = `${dish.name} — S/ ${dish.price}`;
+      dishSelect.append(option);
+    });
+    dishSelect.value = item ? item.dishId : menuDishes[0].id;
+    dishLabel.append(dishSelect);
+
+    const quantityLabel = document.createElement('label');
+    quantityLabel.className = 'table-field';
+    quantityLabel.textContent = 'Cantidad';
+    const quantityInput = document.createElement('input');
+    quantityInput.name = 'quantity';
+    quantityInput.type = 'number';
+    quantityInput.min = '1';
+    quantityInput.max = '99';
+    quantityInput.step = '1';
+    quantityInput.value = item ? String(item.quantity) : '1';
+    quantityInput.required = true;
+    quantityLabel.append(quantityInput);
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'order-item__remove';
+    removeButton.dataset.orderItemRemove = '';
+    removeButton.setAttribute('aria-label', 'Quitar plato');
+    removeButton.textContent = '×';
+    row.append(dishLabel, quantityLabel, removeButton);
+    return row;
+  }
+
+  function updateOrderTotal() {
+    if (!orderItemsContainer || !orderTotal) return;
+    const amount = Array.from(orderItemsContainer.querySelectorAll('.order-item')).reduce(function (total, row) {
+      const dish = menuDishes.find(function (menuItem) {
+        return menuItem.id === row.querySelector('[name="dish"]').value;
+      });
+      const quantity = Number(row.querySelector('[name="quantity"]').value);
+      return total + (dish ? dish.price * (Number.isFinite(quantity) ? quantity : 0) : 0);
+    }, 0);
+    orderTotal.textContent = formatCurrency(amount);
+    orderItemsContainer.querySelectorAll('[data-order-item-remove]').forEach(function (button) {
+      button.disabled = orderItemsContainer.querySelectorAll('.order-item').length === 1;
+    });
+  }
+
+  function saveOrders(nextOrders) {
+    try {
+      window.localStorage.setItem(orderStorageKey, JSON.stringify(nextOrders));
+      orders = nextOrders;
+      renderOrders();
+      setOrderFeedback('', false);
+      return true;
+    } catch (error) {
+      setOrderFeedback('No se pudieron guardar los cambios. Revisa el almacenamiento del navegador e inténtalo de nuevo.', true);
+      return false;
+    }
+  }
+
+  function openOrderDialog(order) {
+    if (!orderDialog || !orderForm || !orderDialogTitle || !orderItemsContainer) return;
+    orderForm.reset();
+    orderForm.elements.id.value = order ? String(order.id) : '';
+    orderForm.elements.status.value = order ? order.status : 'Pendiente';
+    updateOrderTableOptions(order ? order.tableId : '');
+    orderItemsContainer.replaceChildren();
+    (order ? order.items : [null]).forEach(function (item) {
+      orderItemsContainer.append(createOrderItemRow(item));
+    });
+    orderDialogTitle.textContent = order ? `Editar pedido #${order.id}` : 'Nuevo pedido';
+    updateOrderTotal();
+    orderDialog.showModal();
+  }
+
+  function loadOrders() {
+    try {
+      const savedOrders = window.localStorage.getItem(orderStorageKey);
+      if (savedOrders === null) {
+        orders = [];
+        renderOrders();
+        return;
+      }
+
+      const parsedOrders = JSON.parse(savedOrders);
+      const validOrders = Array.isArray(parsedOrders) && parsedOrders.every(function (order) {
+        return order &&
+          Number.isInteger(order.id) &&
+          Number.isInteger(order.tableId) &&
+          order.items instanceof Array &&
+          order.items.length > 0 &&
+          order.items.every(function (item) {
+            return item &&
+              typeof item.dishId === 'string' &&
+              typeof item.name === 'string' &&
+              Number.isFinite(item.price) &&
+              item.price >= 0 &&
+              Number.isInteger(item.quantity) &&
+              item.quantity > 0;
+          }) &&
+          Object.prototype.hasOwnProperty.call(orderStatuses, order.status);
+      });
+
+      if (!validOrders) {
+        throw new Error('El formato de los pedidos guardados no es válido.');
+      }
+
+      orders = parsedOrders;
+      renderOrders();
+    } catch (error) {
+      setOrderFeedback('No se pudieron cargar los pedidos guardados. No se mostrarán datos para evitar perder información.', true);
+      const createOrderButton = document.getElementById('create-order');
+      if (createOrderButton) createOrderButton.disabled = true;
+    }
+  }
+
+  if (orderRows && orderDialog && orderForm && orderItemsContainer) {
+    loadOrders();
+
+    document.getElementById('create-order').addEventListener('click', function () {
+      updateOrderTableOptions('');
+      if (tables.length === 0) {
+        setOrderFeedback('Primero registra una mesa para poder crear un pedido.', true);
+        return;
+      }
+      openOrderDialog(null);
+    });
+
+    document.getElementById('add-order-item').addEventListener('click', function () {
+      orderItemsContainer.append(createOrderItemRow(null));
+      updateOrderTotal();
+    });
+
+    orderItemsContainer.addEventListener('click', function (event) {
+      const removeButton = event.target.closest('[data-order-item-remove]');
+      if (!removeButton || orderItemsContainer.querySelectorAll('.order-item').length === 1) return;
+      removeButton.closest('.order-item').remove();
+      updateOrderTotal();
+    });
+    orderItemsContainer.addEventListener('input', updateOrderTotal);
+    orderItemsContainer.addEventListener('change', updateOrderTotal);
+
+    orderForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (!orderForm.reportValidity()) return;
+
+      const formData = new FormData(orderForm);
+      const tableId = Number(formData.get('tableId'));
+      const selectedTable = tables.find(function (table) {
+        return table.id === tableId;
+      });
+      if (!selectedTable) {
+        setOrderFeedback('Selecciona una mesa válida antes de guardar el pedido.', true);
+        return;
+      }
+
+      const itemRows = Array.from(orderItemsContainer.querySelectorAll('.order-item'));
+      const items = itemRows.map(function (row) {
+        const dish = menuDishes.find(function (menuItem) {
+          return menuItem.id === row.querySelector('[name="dish"]').value;
+        });
+        return dish ? {
+          dishId: dish.id,
+          name: dish.name,
+          price: dish.price,
+          quantity: Number(row.querySelector('[name="quantity"]').value)
+        } : null;
+      });
+      if (items.some(function (item) { return item === null; })) {
+        setOrderFeedback('Selecciona un plato válido en cada línea del pedido.', true);
+        return;
+      }
+
+      const idValue = String(formData.get('id'));
+      const editedId = idValue ? Number(idValue) : null;
+      const nextOrder = {
+        id: editedId || orders.reduce(function (maxId, order) {
+          return Math.max(maxId, order.id);
+        }, 0) + 1,
+        tableId: tableId,
+        items: items,
+        status: String(formData.get('status'))
+      };
+      const nextOrders = editedId
+        ? orders.map(function (order) {
+          return order.id === editedId ? nextOrder : order;
+        })
+        : orders.concat(nextOrder);
+
+      if (saveOrders(nextOrders)) orderDialog.close();
+    });
+
+    orderRows.addEventListener('click', function (event) {
+      const button = event.target.closest('[data-order-action]');
+      if (!button) return;
+
+      const id = Number(button.dataset.orderId);
+      const order = orders.find(function (item) {
+        return item.id === id;
+      });
+      if (!order) return;
+
+      if (button.dataset.orderAction === 'edit') {
+        openOrderDialog(order);
+      } else if (button.dataset.orderAction === 'delete' && window.confirm(`¿Eliminar el pedido ${id}?`)) {
+        saveOrders(orders.filter(function (item) {
+          return item.id !== id;
+        }));
+      }
+    });
+
+    document.getElementById('close-order-dialog').addEventListener('click', function () {
+      orderDialog.close();
+    });
+    document.getElementById('cancel-order-dialog').addEventListener('click', function () {
+      orderDialog.close();
+    });
+  }
 })();
