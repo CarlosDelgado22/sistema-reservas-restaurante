@@ -1,11 +1,11 @@
 /* ==========================================================================
    Sazón · Controlador principal
-   Por ahora solo contiene la interacción visual del inicio de sesión.
    ========================================================================== */
 
 (function () {
   'use strict';
 
+  const namespace = window.Sazon;
   const form = document.getElementById('login-form');
   const usernameInput = document.getElementById('username');
   const passwordInput = document.getElementById('password');
@@ -26,7 +26,6 @@
     });
   }
 
-  // Carga las credenciales de demostración en el formulario.
   document.querySelectorAll('[data-demo-user]').forEach(function (button) {
     button.addEventListener('click', function () {
       if (!usernameInput || !passwordInput) return;
@@ -36,47 +35,26 @@
 
       const details = button.closest('details');
       if (details) details.open = false;
-
       passwordInput.focus();
     });
   });
 
   if (form) {
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
+    namespace.auth.initLogin();
+    return;
+  }
 
-      const username = usernameInput.value.trim().toLocaleLowerCase('es');
-      const password = passwordInput.value;
-      const feedback = document.getElementById('login-feedback');
-      const demoAccounts = {
-        admin: { password: 'admin123', destination: 'admin.html' },
-        cocina: { password: 'cocina123', destination: 'cocina.html' }
-      };
-      const account = demoAccounts[username];
+  if (document.body.classList.contains('kitchen-body')) {
+    if (!namespace.auth.requireRole('cocina')) return;
+    namespace.auth.bindLogoutLinks();
+    namespace.modules.initAdmin();
+    namespace.modules.initKitchen();
+    return;
+  }
 
-      if (!account || account.password !== password) {
-        if (feedback) {
-          feedback.textContent = username === 'mesero' || username === 'despacho'
-            ? 'El acceso para este perfil todavía no está disponible.'
-            : 'Usuario o contraseña incorrectos.';
-          feedback.hidden = false;
-        }
-        passwordInput.focus();
-        return;
-      }
-
-      try {
-        window.sessionStorage.setItem('sazon-session-role', username);
-        window.sessionStorage.setItem('sazon-session-user', username);
-      } catch (error) {
-        if (feedback) {
-          feedback.textContent = 'No se pudo iniciar la sesión en este navegador.';
-          feedback.hidden = false;
-        }
-        return;
-      }
-
-      window.location.assign(account.destination);
-    });
+  if (document.body.classList.contains('admin-body')) {
+    if (!namespace.auth.requireRole('admin')) return;
+    namespace.auth.bindLogoutLinks();
+    namespace.modules.initAdmin();
   }
 })();

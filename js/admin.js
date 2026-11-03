@@ -6,24 +6,13 @@
 (function () {
   'use strict';
 
+  const namespace = window.Sazon;
+  namespace.modules.initAdmin = function () {
   const body = document.body;
   const menuToggle = document.getElementById('menu-toggle');
   const sidebar = document.getElementById('admin-sidebar');
   const scrim = document.getElementById('sidebar-scrim');
   const mobileQuery = window.matchMedia('(max-width: 1024px)');
-
-  if (!body.classList.contains('kitchen-body') &&
-      window.sessionStorage.getItem('sazon-session-role') === 'cocina') {
-    window.location.replace('cocina.html');
-    return;
-  }
-
-  document.querySelectorAll('.logout-link').forEach(function (link) {
-    link.addEventListener('click', function () {
-      window.sessionStorage.removeItem('sazon-session-role');
-      window.sessionStorage.removeItem('sazon-session-user');
-    });
-  });
 
   /* Fecha del día en formato dd/mm/aaaa */
   const today = document.querySelector('[data-today]');
@@ -101,14 +90,7 @@
     });
   }
 
-  function getLocalDateOffset(offset) {
-    const date = new Date();
-    date.setDate(date.getDate() + offset);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
+  const getLocalDateOffset = namespace.modules.getLocalDateOffset;
 
   if (sidebar) {
     sidebar.inert = isMobile();
@@ -142,17 +124,8 @@
   const tableForm = document.getElementById('table-form');
   const dialogTitle = document.getElementById('table-dialog-title');
   const createTableButton = document.getElementById('create-table');
-  const storageKey = 'sazon-admin-tables';
-  const initialTables = [
-    { id: 1, capacity: 2, zone: 'Terraza', status: 'Disponible' },
-    { id: 2, capacity: 4, zone: 'Terraza', status: 'Disponible' },
-    { id: 3, capacity: 4, zone: 'Salón', status: 'Disponible' },
-    { id: 4, capacity: 6, zone: 'Salón', status: 'Disponible' },
-    { id: 5, capacity: 2, zone: 'Barra', status: 'Disponible' },
-    { id: 6, capacity: 8, zone: 'VIP', status: 'Disponible' },
-    { id: 7, capacity: 4, zone: 'Salón', status: 'Disponible' },
-    { id: 8, capacity: 4, zone: 'Terraza', status: 'Disponible' }
-  ];
+  const storageKey = namespace.modules.config.storageKeys.tables;
+  const initialTables = namespace.modules.config.initialTables;
   let tables = [];
 
   function setTableFeedback(message, isError) {
@@ -164,7 +137,7 @@
 
   function saveTables(nextTables) {
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify(nextTables));
+      namespace.storage.setJSON(storageKey, nextTables);
       tables = nextTables;
       renderTables();
       setTableFeedback('', false);
@@ -272,13 +245,12 @@
 
   function loadTables() {
     try {
-      const savedTables = window.localStorage.getItem(storageKey);
-      if (savedTables === null) {
+      const parsedTables = namespace.storage.getJSON(storageKey, undefined);
+      if (parsedTables === undefined) {
         saveTables(initialTables);
         return;
       }
 
-      const parsedTables = JSON.parse(savedTables);
       const validTables = Array.isArray(parsedTables) && parsedTables.every(function (table) {
         return table &&
           Number.isInteger(table.id) &&
@@ -367,7 +339,7 @@
   const reservationFeedback = document.getElementById('reservation-feedback');
   const reservationTableSelect = document.getElementById('reservation-table');
   const reservationEmpty = document.getElementById('reservation-empty');
-  const reservationStorageKey = 'sazon-admin-reservations';
+  const reservationStorageKey = namespace.modules.config.storageKeys.reservations;
   let reservations = [];
 
   function setReservationFeedback(message, isError) {
@@ -459,7 +431,7 @@
 
   function saveReservations(nextReservations) {
     try {
-      window.localStorage.setItem(reservationStorageKey, JSON.stringify(nextReservations));
+      namespace.storage.setJSON(reservationStorageKey, nextReservations);
       reservations = nextReservations;
       renderReservations();
       setReservationFeedback('', false);
@@ -491,14 +463,13 @@
 
   function loadReservations() {
     try {
-      const savedReservations = window.localStorage.getItem(reservationStorageKey);
-      if (savedReservations === null) {
+      const parsedReservations = namespace.storage.getJSON(reservationStorageKey, undefined);
+      if (parsedReservations === undefined) {
         reservations = [];
         renderReservations();
         return;
       }
 
-      const parsedReservations = JSON.parse(savedReservations);
       const validReservations = Array.isArray(parsedReservations) && parsedReservations.every(function (reservation) {
         return reservation &&
           Number.isInteger(reservation.id) &&
@@ -611,19 +582,9 @@
   const orderTotal = document.getElementById('order-total');
   const orderEmpty = document.getElementById('order-empty');
   const pendingDishesCount = document.getElementById('pending-dishes-count');
-  const orderStorageKey = 'sazon-admin-orders';
-  const menuDishes = [
-    { id: 'ceviche', name: 'Ceviche clásico', price: 18 },
-    { id: 'chaufa', name: 'Arroz chaufa', price: 16 },
-    { id: 'lomo', name: 'Lomo saltado', price: 24 },
-    { id: 'aji-gallina', name: 'Ají de gallina', price: 20 },
-    { id: 'causa', name: 'Causa rellena', price: 15 }
-  ];
-  const orderStatuses = {
-    Pendiente: 'pending',
-    Preparado: 'prepared',
-    Entregado: 'delivered'
-  };
+  const orderStorageKey = namespace.modules.config.storageKeys.orders;
+  const menuDishes = namespace.modules.config.menuDishes;
+  const orderStatuses = namespace.modules.config.orderStatuses;
   let orders = [];
 
   function setOrderFeedback(message, isError) {
@@ -633,9 +594,7 @@
     orderFeedback.hidden = !message;
   }
 
-  function formatCurrency(amount) {
-    return `S/ ${amount.toFixed(2)}`;
-  }
+  const formatCurrency = namespace.modules.formatCurrency;
 
   function getOrderAmount(order) {
     return order.items.reduce(function (total, item) {
@@ -791,7 +750,7 @@
 
   function saveOrders(nextOrders) {
     try {
-      window.localStorage.setItem(orderStorageKey, JSON.stringify(nextOrders));
+      namespace.storage.setJSON(orderStorageKey, nextOrders);
       orders = nextOrders;
       renderOrders();
       setOrderFeedback('', false);
@@ -819,14 +778,13 @@
 
   function loadOrders() {
     try {
-      const savedOrders = window.localStorage.getItem(orderStorageKey);
-      if (savedOrders === null) {
+      const parsedOrders = namespace.storage.getJSON(orderStorageKey, undefined);
+      if (parsedOrders === undefined) {
         orders = [];
         renderOrders();
         return;
       }
 
-      const parsedOrders = JSON.parse(savedOrders);
       const validOrders = Array.isArray(parsedOrders) && parsedOrders.every(function (order) {
         return order &&
           Number.isInteger(order.id) &&
@@ -968,4 +926,5 @@
       orderDialog.close();
     });
   }
+  };
 })();

@@ -5,50 +5,27 @@
 (function () {
   'use strict';
 
-  const sessionRoleKey = 'sazon-session-role';
-  const sessionUserKey = 'sazon-session-user';
+  const namespace = window.Sazon;
+  namespace.modules.initKitchen = function () {
   let currentFilter = 'pending';
   let tables = [];
   let reservations = [];
   let orders = [];
 
-  try {
-    if (window.sessionStorage.getItem(sessionRoleKey) !== 'cocina') {
-      window.location.replace('index.html');
-      return;
-    }
-  } catch (error) {
-    window.location.replace('index.html');
-    return;
-  }
-
-  const username = window.sessionStorage.getItem(sessionUserKey) || 'cocina';
+  const username = namespace.auth.getUser() || 'cocina';
   document.getElementById('kitchen-sidebar-user').textContent = username;
   document.getElementById('kitchen-welcome-user').textContent = username;
-
-  document.querySelectorAll('[data-kitchen-logout]').forEach(function (link) {
-    link.addEventListener('click', function () {
-      window.sessionStorage.removeItem(sessionRoleKey);
-      window.sessionStorage.removeItem(sessionUserKey);
-    });
-  });
 
   const orderContainer = document.getElementById('kitchen-orders');
   const emptyState = document.getElementById('kitchen-empty');
   const feedback = document.getElementById('kitchen-feedback');
-  const orderStorageKey = 'sazon-admin-orders';
-  const tableStorageKey = 'sazon-admin-tables';
-  const reservationStorageKey = 'sazon-admin-reservations';
-  const dispatchStorageKey = 'sazon-admin-dispatches';
+  const storageKeys = namespace.modules.config.storageKeys;
+  const orderStorageKey = storageKeys.orders;
+  const tableStorageKey = storageKeys.tables;
+  const reservationStorageKey = storageKeys.reservations;
+  const dispatchStorageKey = storageKeys.dispatches;
 
-  function getKitchenStatus(order, item) {
-    if (['Pendiente', 'En preparación', 'Listo'].includes(item.kitchenStatus)) {
-      return item.kitchenStatus;
-    }
-    return order.status === 'Preparado' || order.status === 'Entregado'
-      ? 'Listo'
-      : 'Pendiente';
-  }
+  const getKitchenStatus = namespace.modules.getKitchenStatus;
 
   function getPendingDishCount() {
     return orders.reduce(function (total, order) {
@@ -90,8 +67,7 @@
   }
 
   function readStorage(key, defaultValue) {
-    const value = window.localStorage.getItem(key);
-    return value === null ? defaultValue : JSON.parse(value);
+    return namespace.storage.getJSON(key, defaultValue);
   }
 
   function createDishCard(order, item, itemIndex, tableLabel) {
@@ -209,7 +185,7 @@
               Number.isInteger(item.quantity) &&
               item.quantity > 0 &&
               (item.kitchenStatus === undefined ||
-                ['Pendiente', 'En preparación', 'Listo'].includes(item.kitchenStatus));
+                namespace.modules.config.kitchenStatuses.includes(item.kitchenStatus));
           });
       });
       if (!validOrders) {
@@ -238,7 +214,7 @@
 
   function saveOrders(nextOrders) {
     try {
-      window.localStorage.setItem(orderStorageKey, JSON.stringify(nextOrders));
+      namespace.storage.setJSON(orderStorageKey, nextOrders);
       orders = nextOrders;
       setFeedback('');
       renderOrders();
@@ -303,4 +279,5 @@
   });
 
   loadData();
+  };
 })();
