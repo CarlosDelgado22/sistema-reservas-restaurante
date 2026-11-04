@@ -7,11 +7,11 @@
   <meta name="theme-color" content="#6e2034">
   <title>Sazón · Sistema de reservas</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236e2034'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='38' fill='%23f7f3ec' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/styles.css?v=20261103-3">
+  <link rel="stylesheet" href="css/styles.css?v=20261103-4">
 </head>
 <body class="auth-body">
 
-  <div class="login-page">
+  <div class="login-page" id="loginView">
     <span class="login-decor login-decor--one" aria-hidden="true"></span>
     <span class="login-decor login-decor--two" aria-hidden="true"></span>
     <span class="login-arch" aria-hidden="true"></span>
@@ -91,6 +91,7 @@
           </button>
           <p class="login-feedback" id="login-feedback" role="status" aria-live="polite" hidden></p>
         </form>
+        <div id="googleSignInDiv"></div>
       </main>
 
       <details class="demo-access">
@@ -131,7 +132,7 @@
   </div>
 
   <!-- Orden importante: storage → auth → modules → app -->
-<div id="app-shell" hidden>
+<div id="appView" hidden>
 
 
   <header class="admin-topbar">
@@ -153,12 +154,12 @@
       <span class="role-label">Administrador</span>
 
       <button type="button" class="user-button" aria-label="Cuenta de Administrador">
-        <span class="user-name">Administrador</span>
+        <span class="user-name" id="userNameDisplay">Administrador</span>
       </button>
 
-      <a class="logout-link" href="#salir">
+      <button type="button" class="logout-link" id="logoutBtn">
         <span>Salir</span>
-      </a>
+      </button>
     </div>
   </header>
 
@@ -229,7 +230,7 @@
       </nav>
     </aside>
 
-    <main class="admin-main">
+    <main class="admin-main" id="mainContent">
       <div id="panel-view" data-admin-view data-roles="admin cocina mesero despacho">
       <div class="page-head">
         <h1 class="page-title">
@@ -653,8 +654,8 @@
 
 </div>
   <script src="js/storage.js?v=20261103-3"></script>
-  <script src="js/auth.js?v=20261103-3"></script>
+  <script src="js/auth.js?v=20261103-6"></script>
   <script src="js/modules.js?v=20261103-3"></script>
-  <script src="js/app.js?v=20261103-3"></script>
+  <script src="js/app.js?v=20261103-6"></script>
 </body>
 </html>
