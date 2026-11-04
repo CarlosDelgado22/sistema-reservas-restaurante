@@ -14,9 +14,11 @@
     },
     setJSON: function (key, value) {
       window.localStorage.setItem(key, JSON.stringify(value));
+      window.dispatchEvent(new CustomEvent('sazon:data-change', { detail: { key: key } }));
     },
     remove: function (key) {
       window.localStorage.removeItem(key);
+      window.dispatchEvent(new CustomEvent('sazon:data-change', { detail: { key: key } }));
     }
   };
 })();
