@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#6e2034">
   <title>Sazón · Sistema de reservas</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236e2034'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='38' fill='%23f7f3ec' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=20261103-2">
 </head>
 <body class="auth-body">
 
@@ -197,10 +197,7 @@
           <span>Reservas</span>
         </a>
 
-        <a href="#cocina" class="nav-item" data-admin-view-link="kitchen" data-roles="admin cocina">
-          <span aria-hidden="true">♨</span><span>Cocina</span><span class="kitchen-nav__count" id="kitchen-nav-count">0</span>
-        </a>
-        <a href="#pedidos" class="nav-item" data-admin-view-link="orders" data-roles="admin mesero">
+        <a href="#pedidos" class="nav-item" data-admin-view-link="orders" data-roles="admin mesero cocina">
           <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M5 3.5v7a2.5 2.5 0 0 0 2.5 2.5H8a2.5 2.5 0 0 0 2.5-2.5v-7"/>
             <path d="M7.75 3.5V13"/>
@@ -444,7 +441,7 @@
         </section>
       </section>
 
-      <section class="orders-view" id="orders-view" data-admin-view data-roles="admin mesero" hidden>
+      <section class="orders-view" id="orders-view" data-admin-view data-roles="admin mesero cocina" hidden>
         <div class="tables-heading">
           <div>
             <h1 class="page-title">Pedidos / Platos</h1>
@@ -482,26 +479,6 @@
             <p class="order-empty" id="order-empty" hidden>Aún no hay pedidos registrados. Crea un pedido para comenzar.</p>
           </div>
         </section>
-      </section>
-
-      <section id="kitchen-view" class="kitchen-queue-view" data-admin-view data-roles="admin cocina" hidden>
-        <header class="kitchen-page-head">
-          <div>
-            <h1>Cocina</h1>
-            <p>Pedidos y platos por preparar</p>
-          </div>
-          <span class="kitchen-pending-pill"><strong id="kitchen-pending-count">0</strong> platos pendientes</span>
-        </header>
-        <p class="kitchen-feedback" id="kitchen-feedback" role="status" aria-live="polite" hidden></p>
-        <div class="kitchen-queue-toolbar">
-          <h2>Comandas</h2>
-          <div class="kitchen-queue-filters" role="group" aria-label="Filtrar comandas">
-            <button type="button" class="kitchen-filter is-active" data-kitchen-filter="pending" aria-pressed="true">Pendientes</button>
-            <button type="button" class="kitchen-filter" data-kitchen-filter="all" aria-pressed="false">Todas</button>
-          </div>
-        </div>
-        <div class="kitchen-orders" id="kitchen-orders" aria-live="polite"></div>
-        <p class="kitchen-empty" id="kitchen-empty" hidden>No hay platos pendientes. ¡Buen trabajo!</p>
       </section>
 
       <section id="dispatches-view" data-admin-view data-roles="admin despacho" hidden>
@@ -646,9 +623,9 @@
   </dialog>
 
 </div>
-  <script src="js/storage.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/modules.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/storage.js?v=20261103-2"></script>
+  <script src="js/auth.js?v=20261103-2"></script>
+  <script src="js/modules.js?v=20261103-2"></script>
+  <script src="js/app.js?v=20261103-2"></script>
 </body>
 </html>

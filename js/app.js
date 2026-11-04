@@ -13,9 +13,10 @@
   const roleNames = {
     admin: 'Administrador',
     mesero: 'Mesero',
-    cocina: 'Cocina',
+    cocina: 'Pedidos / Platos',
     despacho: 'Despacho'
   };
+  let initialized = false;
 
   const passwordInput = document.getElementById('password');
   const passwordToggle = document.getElementById('password-toggle');
@@ -45,47 +46,69 @@
     });
   });
 
-  if (form) namespace.auth.initLogin();
-  if (!appShell) return;
+  function startApplication() {
+    if (!appShell) return;
+    const role = namespace.auth.getRole();
+    if (!supportedRoles.includes(role)) {
+      namespace.auth.clearSession();
+      return;
+    }
 
-  let role = namespace.auth.getRole();
-  if (!supportedRoles.includes(role)) {
-    namespace.auth.clearSession();
-    return;
+    if (loginPage) loginPage.hidden = true;
+    appShell.hidden = false;
+    document.body.className = `admin-body role-${role}`;
+
+    document.querySelectorAll('[data-roles]').forEach(function (element) {
+      const moduleName = element.hasAttribute('data-admin-view')
+        ? element.id.replace(/-view$/, '')
+        : element.dataset.adminViewLink;
+      if (moduleName && !namespace.auth.hasPermission(moduleName)) {
+        element.hidden = true;
+      } else if (!element.hasAttribute('data-admin-view')) {
+        element.hidden = false;
+      }
+    });
+
+    document.querySelectorAll('[data-admin-view]').forEach(function (view) {
+      view.hidden = view.id !== 'panel-view';
+    });
+    document.querySelectorAll('[data-admin-view-link]').forEach(function (link) {
+      const active = link.dataset.adminViewLink === 'panel';
+      link.classList.toggle('is-active', active);
+      if (active) {
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+
+    if (!initialized) {
+      const logoutLinks = document.querySelectorAll('.logout-link');
+      logoutLinks.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+          event.preventDefault();
+          namespace.auth.clearSession();
+          appShell.hidden = true;
+          if (loginPage) loginPage.hidden = false;
+          document.body.className = 'auth-body';
+        });
+      });
+
+      namespace.modules.initAdmin();
+      namespace.modules.initDispatches();
+      namespace.modules.initDashboard();
+      initialized = true;
+    }
+
+    const roleLabel = document.querySelector('.role-label');
+    if (roleLabel) roleLabel.textContent = roleNames[role];
+    const userName = document.querySelector('.user-name');
+    if (userName) userName.textContent = namespace.auth.getUser() || roleNames[role];
+    const userButton = document.querySelector('.user-button');
+    if (userButton) userButton.setAttribute('aria-label', `Cuenta de ${roleNames[role]}`);
   }
 
-  if (loginPage) loginPage.hidden = true;
-  appShell.hidden = false;
-  document.body.className = `admin-body role-${role}`;
-
-  document.querySelectorAll('[data-roles]').forEach(function (element) {
-    const moduleName = element.hasAttribute('data-admin-view')
-      ? element.id.replace(/-view$/, '')
-      : element.dataset.adminViewLink;
-    if (moduleName && !namespace.auth.hasPermission(moduleName)) {
-      element.hidden = true;
-    } else if (!element.hasAttribute('data-admin-view')) {
-      element.hidden = false;
-    }
-  });
-
-  const roleLabel = document.querySelector('.role-label');
-  if (roleLabel) roleLabel.textContent = roleNames[role];
-  const userName = document.querySelector('.user-name');
-  if (userName) userName.textContent = namespace.auth.getUser() || roleNames[role];
-  const userButton = document.querySelector('.user-button');
-  if (userButton) userButton.setAttribute('aria-label', `Cuenta de ${roleNames[role]}`);
-
-  document.querySelectorAll('.logout-link, [data-kitchen-logout]').forEach(function (link) {
-    link.addEventListener('click', function (event) {
-      event.preventDefault();
-      namespace.auth.clearSession();
-      window.location.assign('index.html');
-    });
-  });
-
-  namespace.modules.initAdmin();
-  namespace.modules.initKitchen();
-  namespace.modules.initDispatches();
-  namespace.modules.initDashboard();
+  document.addEventListener('sazon:login', startApplication);
+  if (form) namespace.auth.initLogin();
+  if (namespace.auth.getRole()) startApplication();
 })();

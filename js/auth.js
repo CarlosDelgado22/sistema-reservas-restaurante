@@ -9,9 +9,9 @@
   const roleKey = 'sazon-session-role';
   const userKey = 'sazon-session-user';
   const permissions = {
-    admin: ['panel', 'tables', 'reservations', 'orders', 'kitchen', 'dispatches', 'users'],
+    admin: ['panel', 'tables', 'reservations', 'orders', 'dispatches', 'users'],
     mesero: ['panel', 'tables', 'reservations', 'orders'],
-    cocina: ['panel', 'kitchen'],
+    cocina: ['panel', 'orders'],
     despacho: ['panel', 'dispatches']
   };
   const accounts = {
@@ -69,7 +69,7 @@
           return;
         }
 
-        window.location.assign(account.destination);
+        document.dispatchEvent(new CustomEvent('sazon:login'));
       });
     }
   };

@@ -683,6 +683,12 @@
   function renderOrders() {
     if (!orderRows || !orderEmpty) return;
 
+    const activeRole = namespace.auth.getRole();
+    const canManageOrders = activeRole === 'admin' || activeRole === 'mesero';
+    const canUpdateDishes = activeRole === 'admin' || activeRole === 'cocina';
+    const createOrderButton = document.getElementById('create-order');
+    if (createOrderButton) createOrderButton.hidden = !canManageOrders;
+
     orderRows.replaceChildren();
     orders.slice().sort(function (first, second) {
       return second.id - first.id;
@@ -699,10 +705,26 @@
       const dishesCell = document.createElement('td');
       const dishesList = document.createElement('div');
       dishesList.className = 'order-dishes-list';
-      order.items.forEach(function (item) {
-        const line = document.createElement('span');
+      order.items.forEach(function (item, itemIndex) {
+        const line = document.createElement('div');
         line.className = 'order-dish-line';
-        line.textContent = `${item.quantity} × ${item.name}`;
+        const description = document.createElement('span');
+        description.textContent = `${item.quantity} × ${item.name}`;
+        const dishStatus = namespace.modules.getKitchenStatus(order, item);
+        const statusBadge = document.createElement('span');
+        statusBadge.className = `dish-status dish-status--${dishStatus === 'Listo' ? 'ready' : dishStatus === 'En preparación' ? 'preparing' : 'pending'}`;
+        statusBadge.textContent = dishStatus;
+        line.append(description, statusBadge);
+        if (canUpdateDishes && dishStatus !== 'Listo' && order.status !== 'Entregado') {
+          const statusButton = document.createElement('button');
+          statusButton.type = 'button';
+          statusButton.className = 'button button--small button--secondary dish-status-action';
+          statusButton.dataset.orderItemStatus = '';
+          statusButton.dataset.orderId = String(order.id);
+          statusButton.dataset.itemIndex = String(itemIndex);
+          statusButton.textContent = dishStatus === 'Pendiente' ? 'Iniciar preparación' : 'Marcar listo';
+          line.append(statusButton);
+        }
         dishesList.append(line);
       });
       dishesCell.append(dishesList);
@@ -714,21 +736,25 @@
 
       const actions = document.createElement('td');
       actions.className = 'table-actions';
-      const editButton = document.createElement('button');
-      editButton.type = 'button';
-      editButton.className = 'button button--small button--secondary';
-      editButton.dataset.orderAction = 'edit';
-      editButton.dataset.orderId = String(order.id);
-      editButton.textContent = 'Editar';
-      editButton.setAttribute('aria-label', `Editar pedido ${order.id}`);
-      const deleteButton = document.createElement('button');
-      deleteButton.type = 'button';
-      deleteButton.className = 'button button--small button--danger';
-      deleteButton.dataset.orderAction = 'delete';
-      deleteButton.dataset.orderId = String(order.id);
-      deleteButton.textContent = 'Eliminar';
-      deleteButton.setAttribute('aria-label', `Eliminar pedido ${order.id}`);
-      actions.append(editButton, deleteButton);
+      if (canManageOrders) {
+        const editButton = document.createElement('button');
+        editButton.type = 'button';
+        editButton.className = 'button button--small button--secondary';
+        editButton.dataset.orderAction = 'edit';
+        editButton.dataset.orderId = String(order.id);
+        editButton.textContent = 'Editar';
+        editButton.setAttribute('aria-label', `Editar pedido ${order.id}`);
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'button button--small button--danger';
+        deleteButton.dataset.orderAction = 'delete';
+        deleteButton.dataset.orderId = String(order.id);
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.setAttribute('aria-label', `Eliminar pedido ${order.id}`);
+        actions.append(editButton, deleteButton);
+      } else {
+        actions.textContent = '—';
+      }
       row.append(actions);
       orderRows.append(row);
     });
@@ -972,6 +998,36 @@
     });
 
     orderRows.addEventListener('click', function (event) {
+      const statusButton = event.target.closest('[data-order-item-status]');
+      if (statusButton) {
+        if (!namespace.auth.hasPermission('orders') ||
+            !['admin', 'cocina'].includes(namespace.auth.getRole())) return;
+        const orderId = Number(statusButton.dataset.orderId);
+        const itemIndex = Number(statusButton.dataset.itemIndex);
+        const order = orders.find(function (item) { return item.id === orderId; });
+        if (!order || !order.items[itemIndex]) return;
+
+        const currentStatus = namespace.modules.getKitchenStatus(order, order.items[itemIndex]);
+        const nextStatus = currentStatus === 'Pendiente' ? 'En preparación' : 'Listo';
+        const updatedOrder = {
+          ...order,
+          items: order.items.map(function (item, index) {
+            return index === itemIndex ? { ...item, kitchenStatus: nextStatus } : item;
+          })
+        };
+        if (updatedOrder.items.every(function (item) {
+          return namespace.modules.getKitchenStatus(updatedOrder, item) === 'Listo';
+        }) && updatedOrder.status !== 'Entregado') {
+          updatedOrder.status = 'Preparado';
+        } else if (updatedOrder.status === 'Preparado') {
+          updatedOrder.status = 'Pendiente';
+        }
+        saveOrders(orders.map(function (item) {
+          return item.id === orderId ? updatedOrder : item;
+        }));
+        return;
+      }
+
       const button = event.target.closest('[data-order-action]');
       if (!button) return;
 
@@ -1028,201 +1084,6 @@
       }
     });
   }
-  };
-})();
-
-
-/* ==========================================================================
-   Sazón · Preparación de pedidos
-   ========================================================================== */
-
-(function () {
-  'use strict';
-
-  const namespace = window.Sazon;
-  namespace.modules.initKitchen = function () {
-    const config = namespace.modules.config;
-    const orderKey = config.storageKeys.orders;
-    const tableKey = config.storageKeys.tables;
-    const orderContainer = document.getElementById('kitchen-orders');
-    const emptyState = document.getElementById('kitchen-empty');
-    const feedback = document.getElementById('kitchen-feedback');
-    const count = document.getElementById('kitchen-pending-count');
-    const navCount = document.getElementById('kitchen-nav-count');
-    if (!orderContainer || !emptyState || !feedback || !count || !navCount) return;
-
-    let filter = 'pending';
-    let orders = [];
-    let tables = [];
-
-    function statusFor(order, item) {
-      return namespace.modules.getKitchenStatus(order, item);
-    }
-
-    function pendingCount() {
-      return orders.reduce(function (total, order) {
-        if (order.status === 'Entregado') return total;
-        return total + order.items.reduce(function (sum, item) {
-          return sum + (statusFor(order, item) === 'Listo' ? 0 : item.quantity);
-        }, 0);
-      }, 0);
-    }
-
-    function render() {
-      orderContainer.replaceChildren();
-      const visibleOrders = orders.slice().sort(function (a, b) {
-        return b.id - a.id;
-      }).filter(function (order) {
-        return filter === 'all' || (order.status !== 'Entregado' &&
-          order.items.some(function (item) { return statusFor(order, item) !== 'Listo'; }));
-      });
-
-      visibleOrders.forEach(function (order) {
-        const table = tables.find(function (item) { return item.id === order.tableId; });
-        const card = document.createElement('article');
-        card.className = 'kitchen-order-card';
-        const header = document.createElement('header');
-        header.className = 'kitchen-order-card__head';
-        const title = document.createElement('h2');
-        title.textContent = `Pedido #${order.id}`;
-        const tableName = document.createElement('span');
-        tableName.textContent = table ? `Mesa ${table.id}` : 'Mesa no disponible';
-        header.append(title, tableName);
-
-        const dishes = document.createElement('div');
-        dishes.className = 'kitchen-order-dishes';
-        order.items.forEach(function (item, index) {
-          const dish = document.createElement('article');
-          dish.className = 'kitchen-dish';
-          const info = document.createElement('div');
-          info.className = 'kitchen-dish__info';
-          const name = document.createElement('span');
-          name.className = 'kitchen-dish__name';
-          name.textContent = item.name;
-          const quantity = document.createElement('span');
-          quantity.className = 'kitchen-dish__quantity';
-          quantity.textContent = `Cantidad: ${item.quantity}`;
-          info.append(name, quantity);
-
-          const state = document.createElement('div');
-          state.className = 'kitchen-dish__state';
-          const badge = document.createElement('span');
-          const status = statusFor(order, item);
-          badge.className = `kitchen-dish__badge${status === 'Listo' ? ' kitchen-dish__badge--ready' : status === 'En preparación' ? ' kitchen-dish__badge--preparing' : ''}`;
-          badge.textContent = status;
-          state.append(badge);
-          if (status !== 'Listo' && order.status !== 'Entregado') {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'kitchen-dish__action';
-            button.dataset.orderId = String(order.id);
-            button.dataset.itemIndex = String(index);
-            button.textContent = status === 'Pendiente' ? 'Iniciar preparación' : 'Marcar listo';
-            state.append(button);
-          }
-          dish.append(info, state);
-          dishes.append(dish);
-        });
-
-        const footer = document.createElement('footer');
-        footer.className = 'kitchen-order-card__foot';
-        footer.textContent = `${order.items.length} ${order.items.length === 1 ? 'plato' : 'platos'} · ${order.status}`;
-        card.append(header, dishes, footer);
-        orderContainer.append(card);
-      });
-
-      emptyState.hidden = visibleOrders.length > 0;
-      emptyState.textContent = orders.length === 0
-        ? 'Aún no hay pedidos. Los nuevos pedidos aparecerán aquí.'
-        : filter === 'pending' ? 'No hay platos pendientes. ¡Buen trabajo!' : 'No hay pedidos registrados.';
-      count.textContent = navCount.textContent = String(pendingCount());
-    }
-
-    function load() {
-      try {
-        const nextTables = namespace.storage.getJSON(tableKey, []);
-        const nextOrders = namespace.storage.getJSON(orderKey, []);
-        if (!Array.isArray(nextTables) || !Array.isArray(nextOrders) ||
-            !nextOrders.every(function (order) {
-              return order && Number.isInteger(order.id) && Number.isInteger(order.tableId) &&
-                Array.isArray(order.items) && order.items.length > 0 &&
-                order.items.every(function (item) {
-                  return item && typeof item.name === 'string' &&
-                    Number.isInteger(item.quantity) && item.quantity > 0 &&
-                    (item.kitchenStatus === undefined || config.kitchenStatuses.includes(item.kitchenStatus));
-                });
-            })) {
-          throw new Error('El formato de los pedidos guardados no es válido.');
-        }
-        tables = nextTables;
-        orders = nextOrders.map(function (order) {
-          return {
-            ...order,
-            items: order.items.map(function (item) {
-              return { ...item, kitchenStatus: statusFor(order, item) };
-            })
-          };
-        });
-        feedback.hidden = true;
-        render();
-      } catch (error) {
-        feedback.textContent = 'No se pudieron cargar los pedidos. Revisa los datos guardados e inténtalo de nuevo.';
-        feedback.hidden = false;
-      }
-    }
-
-    orderContainer.addEventListener('click', function (event) {
-      const button = event.target.closest('[data-order-id][data-item-index]');
-      if (!button) return;
-      const orderId = Number(button.dataset.orderId);
-      const itemIndex = Number(button.dataset.itemIndex);
-      const order = orders.find(function (item) { return item.id === orderId; });
-      if (!order || !order.items[itemIndex]) return;
-
-      const nextStatus = statusFor(order, order.items[itemIndex]) === 'Pendiente'
-        ? 'En preparación' : 'Listo';
-      const updated = {
-        ...order,
-        items: order.items.map(function (item, index) {
-          return index === itemIndex ? { ...item, kitchenStatus: nextStatus } : item;
-        })
-      };
-      if (updated.items.every(function (item) { return statusFor(updated, item) === 'Listo'; }) &&
-          updated.status !== 'Entregado') {
-        updated.status = 'Preparado';
-      } else if (updated.status === 'Preparado') {
-        updated.status = 'Pendiente';
-      }
-      try {
-        namespace.storage.setJSON(orderKey, orders.map(function (item) {
-          return item.id === orderId ? updated : item;
-        }));
-        load();
-      } catch (error) {
-        feedback.textContent = 'No se pudo actualizar el plato. Revisa el almacenamiento del navegador.';
-        feedback.hidden = false;
-      }
-    });
-
-    document.querySelectorAll('[data-kitchen-filter]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        filter = button.dataset.kitchenFilter;
-        document.querySelectorAll('[data-kitchen-filter]').forEach(function (item) {
-          const active = item === button;
-          item.classList.toggle('is-active', active);
-          item.setAttribute('aria-pressed', String(active));
-        });
-        render();
-      });
-    });
-
-    window.addEventListener('sazon:data-change', function (event) {
-      if ([orderKey, tableKey].includes(event.detail.key)) load();
-    });
-    window.addEventListener('storage', function (event) {
-      if ([orderKey, tableKey].includes(event.key)) load();
-    });
-    load();
   };
 })();
 
