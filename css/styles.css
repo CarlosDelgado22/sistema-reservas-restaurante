@@ -1795,6 +1795,46 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+.kitchen-orders-queue {
+  padding-bottom: 30px;
+}
+
+.kitchen-queue-heading {
+  margin-bottom: 24px;
+}
+
+.kitchen-queue-panel {
+  margin-bottom: 24px;
+  overflow: hidden;
+  border: 1px solid #e0d8d0;
+  border-radius: var(--radius-card);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.kitchen-queue-panel h2 {
+  margin: 0;
+  padding: 21px 26px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.kitchen-queue-table {
+  width: 100%;
+}
+
+.kitchen-queue-empty {
+  padding: 24px !important;
+  color: var(--muted);
+  text-align: center;
+}
+
+.kitchen-queue-table .dish-status-action {
+  min-width: 108px;
+}
+
 /* ==========================================================================
    Responsive
    ========================================================================== */
@@ -1937,6 +1977,10 @@ button {
 
   .role-label {
     display: none;
+  }
+
+  body.role-cocina .role-label {
+    display: inline-flex;
   }
 
   .user-button {

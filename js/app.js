@@ -13,7 +13,7 @@
   const roleNames = {
     admin: 'Administrador',
     mesero: 'Mesero',
-    cocina: 'Pedidos / Platos',
+    cocina: 'Cocina',
     despacho: 'Despacho'
   };
   let initialized = false;

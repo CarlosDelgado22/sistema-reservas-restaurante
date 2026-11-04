@@ -644,6 +644,9 @@
   }
 
   const orderRows = document.getElementById('order-rows');
+  const kitchenPendingRows = document.getElementById('kitchen-pending-rows');
+  const kitchenPreparingRows = document.getElementById('kitchen-preparing-rows');
+  const ordersView = document.getElementById('orders-view');
   const orderDialog = document.getElementById('order-dialog');
   const orderForm = document.getElementById('order-form');
   const orderDialogTitle = document.getElementById('order-dialog-title');
@@ -686,13 +689,19 @@
     const activeRole = namespace.auth.getRole();
     const canManageOrders = activeRole === 'admin' || activeRole === 'mesero';
     const canUpdateDishes = activeRole === 'admin' || activeRole === 'cocina';
+    const isKitchen = activeRole === 'cocina';
     const createOrderButton = document.getElementById('create-order');
+    const orderManagement = document.getElementById('orders-management');
+    const kitchenQueue = document.getElementById('kitchen-orders-queue');
     if (createOrderButton) createOrderButton.hidden = !canManageOrders;
+    if (orderManagement) orderManagement.hidden = isKitchen;
+    if (kitchenQueue) kitchenQueue.hidden = !isKitchen;
 
     orderRows.replaceChildren();
-    orders.slice().sort(function (first, second) {
+    const sortedOrders = orders.slice().sort(function (first, second) {
       return second.id - first.id;
-    }).forEach(function (order) {
+    });
+    sortedOrders.forEach(function (order) {
       const row = document.createElement('tr');
       const assignedTable = tables.find(function (table) {
         return table.id === order.tableId;
@@ -758,6 +767,48 @@
       row.append(actions);
       orderRows.append(row);
     });
+
+    function renderKitchenQueue(status, targetRows, actionText, emptyText) {
+      if (!targetRows) return;
+      targetRows.replaceChildren();
+      let dishCount = 0;
+      sortedOrders.forEach(function (order) {
+        if (order.status === 'Entregado') return;
+        order.items.forEach(function (item, itemIndex) {
+          if (namespace.modules.getKitchenStatus(order, item) !== status) return;
+          dishCount += 1;
+          const row = document.createElement('tr');
+          const dishCell = makeCell(`${item.quantity} × ${item.name}`);
+          const orderCell = makeCell(`#${order.id}`);
+          const actionCell = document.createElement('td');
+          const actionButton = document.createElement('button');
+          actionButton.type = 'button';
+          actionButton.className = 'button button--small button--secondary dish-status-action';
+          actionButton.dataset.orderItemStatus = '';
+          actionButton.dataset.orderId = String(order.id);
+          actionButton.dataset.itemIndex = String(itemIndex);
+          actionButton.textContent = actionText;
+          actionButton.setAttribute('aria-label', `${actionText}: ${item.name}, pedido ${order.id}`);
+          actionCell.append(actionButton);
+          row.append(dishCell, orderCell, actionCell);
+          targetRows.append(row);
+        });
+      });
+
+      if (dishCount === 0) {
+        const row = document.createElement('tr');
+        const cell = makeCell(emptyText);
+        cell.colSpan = 3;
+        cell.className = 'kitchen-queue-empty';
+        row.append(cell);
+        targetRows.append(row);
+      }
+    }
+
+    if (isKitchen) {
+      renderKitchenQueue('Pendiente', kitchenPendingRows, 'Preparar', 'No hay platos pendientes.');
+      renderKitchenQueue('En preparación', kitchenPreparingRows, 'Marcar listo', 'No hay platos en preparación.');
+    }
 
     orderEmpty.hidden = orders.length !== 0;
     pendingDishesCount.textContent = String(
@@ -997,7 +1048,7 @@
       if (saveOrders(nextOrders)) orderDialog.close();
     });
 
-    orderRows.addEventListener('click', function (event) {
+    ordersView.addEventListener('click', function (event) {
       const statusButton = event.target.closest('[data-order-item-status]');
       if (statusButton) {
         if (!namespace.auth.hasPermission('orders') ||
